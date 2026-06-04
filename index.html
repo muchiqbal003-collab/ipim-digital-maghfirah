@@ -241,7 +241,8 @@
 
     <!-- LOGIN -->
     <div class="login-overlay" id="halamanLogin">
-        <div class="login-card"><div class="login-logo">AD</div><h1>Absensi Digital</h1><p class="subtitle">Sistem Manajemen Kehadiran Mahasiswa</p>
+        <div class="login-card"><div class="login-logo"><img src="images/logo.png" alt="IPIM" style="width:100%;height:100%;object-fit:contain;"></div><h1>IPIM</h1>
+<p class="subtitle">Institut Pendidikan Islam Maghfirah</p>
             <div class="role-selector"><button class="role-btn active" data-role="dosen" onclick="pilihRole('dosen',this)">Dosen</button><button class="role-btn" data-role="admin" onclick="pilihRole('admin',this)">Admin</button></div>
             <form id="formLogin"><div class="form-group"><input type="text" id="username" placeholder="Username" required></div><div class="form-group"><input type="password" id="password" placeholder="Password" required></div><div class="pesan-error" id="pesanError"></div><button type="submit" class="btn-login">Masuk</button></form>
         </div>
@@ -250,7 +251,7 @@
     <!-- HALAMAN UTAMA -->
     <div id="halamanUtama" style="display:none;width:100%;">
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-header"><button class="hamburger" onclick="toggleSidebar()">☰</button><div class="sidebar-brand">Absensi<span>Digital</span></div></div>
+            <div class="sidebar-header"><button class="hamburger" onclick="toggleSidebar()">☰</button><div class="sidebar-brand">IPIM<span>Absensi</span></div></div>
             <div class="profil-sidebar"><div class="avatar" id="avatarSidebar" onclick="document.getElementById('uploadFoto').click()" title="Klik ganti foto">A</div><input type="file" id="uploadFoto" accept="image/*" style="display:none;" onchange="uploadFotoProfil(event)"><div class="profil-text"><div class="nama" id="namaSidebar">-</div><div class="role" id="roleSidebar">-</div></div></div>
             <div class="sidebar-menu" id="sidebarMenu"></div>
             <div class="sidebar-footer"><button class="btn-logout" onclick="bukaModal('modalLogout')">
