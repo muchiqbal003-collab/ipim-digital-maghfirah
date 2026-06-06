@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPIM ACADEMY</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #0d7c3b; --green-light: #10b34a; --green-pale: #e8f5e9; --green-dark: #0a5c2b;
+            --orange: #f48120; --orange-light: #ffa94d; --orange-pale: #fff3e0;
+            --white: #ffffff; --bg: #f5f6f8; --card: #ffffff;
+            --text: #1a1a2e; --text-light: #6b7280; --text-lighter: #9ca3af;
+            --border: #e5e7eb; --danger: #dc2626; --danger-light: #fef2f2;
+            --radius: 16px; --radius-sm: 10px; --radius-xs: 6px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 250px; --sidebar-collapsed: 0px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg); display: flex; min-height: 100vh;
+            color: var(--text); -webkit-font-smoothing: antialiased;
+        }
+
+        /* SPINNER */
+        .spinner-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-card { background: white; padding: 32px; border-radius: var(--radius); max-width: 550px; width: 90%; box-shadow: var(--shadow-lg); animation: slideUp 0.3s ease; max-height: 85vh; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-card h3 { margin-bottom: 20px; color: var(--text); font-size: 1.2em; font-weight: 700; }
+        .modal-buttons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+
+        /* SIDEBAR */
+        .sidebar { width: var(--sidebar-width); background: var(--white); position: fixed; height: 100vh; left: 0; top: 0; z-index: 1000; transition: var(--transition); display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+        .sidebar.collapsed { width: var(--sidebar-collapsed); padding: 0; }
+        .sidebar-header { padding: 20px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+        .hamburger { background: none; border: none; color: var(--text); font-size: 1.4em; cursor: pointer; padding: 6px; border-radius: 8px; transition: var(--transition); display: flex; }
+        .hamburger:hover { background: var(--bg); }
+        .sidebar-brand { font-weight: 800; font-size: 1.15em; white-space: nowrap; color: var(--green); letter-spacing: -0.5px; }
+        .sidebar-brand span { color: var(--orange); }
+        .sidebar.collapsed .sidebar-brand, .sidebar.collapsed .menu-text, .sidebar.collapsed .profil-text, .sidebar.collapsed .menu-section { display: none; }
+
+        .profil-sidebar { padding: 16px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+        .avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--green), var(--green-light)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1em; color: white; min-width: 42px; overflow: hidden; cursor: pointer; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profil-text .nama { font-size: 0.88em; font-weight: 600; color: var(--text); line-height: 1.2; }
+        .profil-text .role { font-size: 0.72em; color: var(--text-light); }
+
+        .sidebar-menu { flex: 1; padding: 8px 0; overflow-y: auto; }
+        .menu-section { padding: 10px 20px 4px; font-size: 0.68em; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-lighter); font-weight: 700; }
+        .menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin: 2px 10px; color: var(--text-light); cursor: pointer; transition: var(--transition); font-size: 0.85em; font-weight: 500; white-space: nowrap; border-radius: var(--radius-sm); }
+        .menu-item:hover { background: var(--green-pale); color: var(--green); }
+        .menu-item.active { background: var(--green-pale); color: var(--green); font-weight: 600; }
+        .menu-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .menu-icon svg { width: 18px; height: 18px; stroke: currentColor; }
+
+        .sidebar-footer { padding: 14px; border-top: 1px solid var(--border); }
+        .btn-logout { width: 100%; padding: 10px; background: #fff5f5; color: #dc2626; border: 1px solid #fecaca; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.83em; font-weight: 500; transition: var(--transition); font-family: inherit; display: flex; align-items: center; gap: 8px; justify-content: center; }
+        .btn-logout:hover { background: #fef2f2; }
+
+        /* OVERLAY MOBILE */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
+
+        /* MAIN */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 28px 32px; transition: var(--transition); min-height: 100vh; width: 100%; }
+        .main-content.expanded { margin-left: var(--sidebar-collapsed); }
+        .page-content { animation: fadeSlideIn 0.4s ease; }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .top-bar h1 { font-size: 1.6em; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+        .top-bar .breadcrumb { color: var(--text-light); font-size: 0.83em; margin-top: 2px; }
+        .top-bar .date { color: var(--text-light); font-size: 0.83em; background: var(--card); padding: 8px 14px; border-radius: 20px; box-shadow: var(--shadow-sm); white-space: nowrap; }
+
+        .semester-badge { display: inline-block; background: var(--green-pale); color: var(--green); padding: 7px 16px; border-radius: 20px; font-weight: 600; font-size: 0.8em; margin-bottom: 16px; cursor: pointer; transition: var(--transition); }
+        .semester-badge:hover { background: var(--green); color: white; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border); transition: var(--transition); position: relative; overflow: hidden; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .stat-card .stat-value { font-size: 2em; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 4px; }
+        .stat-card .stat-label { font-size: 0.78em; color: var(--text-light); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .stat-card .stat-icon svg { width: 22px; height: 22px; }
+        .stat-icon.green { background: var(--green-pale); }
+        .stat-icon.green svg { stroke: var(--green); }
+        .stat-icon.orange { background: var(--orange-pale); }
+        .stat-icon.orange svg { stroke: var(--orange); }
+        .stat-icon.blue { background: #e3f2fd; }
+        .stat-icon.blue svg { stroke: #1565c0; }
+        .stat-icon.red { background: #ffebee; }
+        .stat-icon.red svg { stroke: #c62828; }
+
+        /* CARDS */
+        .card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); }
+        .card h3 { font-size: 1.05em; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--green-pale); justify-content: space-between; }
+        .card-header { display: flex; align-items: center; gap: 8px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* TABLE */
+        .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        thead { background: #f9fafb; }
+        th { padding: 12px 14px; text-align: left; font-weight: 600; color: var(--text-light); font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text); }
+        tbody tr { transition: background 0.15s; }
+        tbody tr:hover { background: #fafdfa; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.72em; font-weight: 600; }
+        .badge-success { background: #ecfdf5; color: #065f46; }
+        .badge-warning { background: #fffbeb; color: #92400e; }
+        .badge-info { background: #eff6ff; color: #1e40af; }
+        .badge-purple { background: #f5f3ff; color: #5b21b6; }
+        .badge-danger { background: #fef2f2; color: #991b1b; }
+        .text-center { text-align: center; }
+        .text-danger { color: #dc2626; font-weight: 600; }
+        .text-success { color: #059669; font-weight: 600; }
+
+        /* BUTTONS */
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.83em; font-weight: 600; font-family: inherit; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--green-light); box-shadow: 0 4px 12px rgba(13,124,59,0.3); }
+        .btn-outline { background: white; color: var(--green); border: 2px solid var(--green); }
+        .btn-outline:hover { background: var(--green-pale); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--orange); color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 0.75em; border-radius: var(--radius-xs); }
+        .btn-xs { padding: 3px 8px; font-size: 0.7em; border-radius: 4px; }
+        .btn-icon { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); }
+        .action-btns { display: flex; gap: 4px; }
+
+        /* FORM */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.83em; color: var(--text); }
+        .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; transition: var(--transition); background: #fafafa; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--green); background: white; box-shadow: 0 0 0 3px rgba(13,124,59,0.08); }
+        .input-mini { width: 70px !important; display: inline-block; text-align: center; padding: 5px !important; }
+
+        /* JADWAL GRID */
+        .jadwal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+        .jadwal-card-mini { background: var(--card); padding: 16px; border-radius: var(--radius-sm); border-left: 4px solid var(--green); box-shadow: var(--shadow-sm); transition: var(--transition); }
+        .jadwal-card-mini:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+        .jadwal-card-mini .dosen-nama { font-weight: 600; color: var(--text); font-size: 0.88em; }
+        .jadwal-card-mini .dosen-info { color: var(--text-light); font-size: 0.76em; margin-top: 2px; }
+
+        /* LOGIN */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #f0fdf4 0%, #fff7ed 50%, #f5f6f8 100%); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-card { background: white; padding: 40px 32px; border-radius: 24px; width: 400px; max-width: 90%; box-shadow: 0 25px 80px rgba(0,0,0,0.12); text-align: center; }
+        .login-logo { width: 52px; height: 52px; background: linear-gradient(135deg, var(--green), var(--orange)); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: white; font-size: 1.4em; font-weight: 800; }
+        .login-card h1 { font-size: 1.4em; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .login-card .subtitle { color: var(--text-light); margin-bottom: 24px; font-size: 0.88em; }
+        .role-selector { display: flex; gap: 8px; margin-bottom: 20px; background: #f3f4f6; padding: 5px; border-radius: 12px; }
+        .role-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.85em; transition: var(--transition); color: var(--text-light); }
+        .role-btn.active { background: white; color: var(--green); box-shadow: var(--shadow-sm); }
+        .pesan-error { background: #fef2f2; color: #991b1b; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 0.83em; display: none; }
+        .btn-login { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--green), var(--green-light)); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: var(--transition); }
+        .btn-login:hover { box-shadow: 0 8px 25px rgba(13,124,59,0.35); transform: translateY(-1px); }
+        .btn-login:disabled { background: #d1d5db; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 260px; z-index: 1001; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+            .main-content { margin-left: 0 !important; padding: 20px 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 14px; }
+            .stat-card .stat-value { font-size: 1.5em; }
+            .top-bar h1 { font-size: 1.3em; }
+            .jadwal-grid { grid-template-columns: 1fr 1fr; }
+            .modal-card { padding: 20px; }
+            .btn { padding: 6px 12px; font-size: 0.78em; }
+            table { font-size: 0.75em; }
+            th, td { padding: 8px 10px; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .stat-card .stat-value { font-size: 1.3em; }
+            .jadwal-grid { grid-template-columns: 1fr; }
+            .login-card { padding: 28px 20px; }
+        }
+
+        /* MOBILE HEADER */
+        .mobile-header { display: none; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .mobile-header .hamburger-mobile { background: none; border: none; font-size: 1.5em; cursor: pointer; padding: 4px; }
+        @media (max-width: 768px) { .mobile-header { display: flex; } }
+    </style>
+    <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('sw.js')
+        }
+      </script>
+</head>
+<body>
+
+    <!-- SPINNER -->
+    <div class="spinner-overlay" id="spinner" style="display:none;"><div class="spinner"></div></div>
+
+    <!-- SIDEBAR OVERLAY MOBILE -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- MODAL HAPUS -->
+    <div class="modal-overlay" id="modalHapus" style="display:none;">
+        <div class="modal-card"><h3>Konfirmasi Hapus</h3><p id="pesanHapus">Yakin ingin menghapus?</p>
+            <div class="modal-buttons"><button class="btn btn-outline" onclick="tutupModal('modalHapus')">Batal</button><button class="btn btn-danger" id="btnKonfirmasiHapus">Ya, Hapus</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL FORM -->
+    <div class="modal-overlay" id="modalForm" style="display:none;"><div class="modal-card" id="modalFormContent"></div></div>
+
+    <!-- MODAL IMPORT -->
+    <div class="modal-overlay" id="modalImport" style="display:none;">
+        <div class="modal-card">
+            <h3>Import Data</h3>
+            <p style="margin-bottom:12px;color:var(--text-light);font-size:0.85em;">Pilih file Excel (.xlsx) untuk diimport</p>
+            <input type="file" id="fileImport" accept=".xlsx,.xls" style="margin-bottom:12px;">
+            <div id="previewImport" style="max-height:200px;overflow-y:auto;margin-bottom:12px;font-size:0.8em;"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-outline" onclick="tutupModal('modalImport')">Batal</button>
+                <button class="btn btn-primary" id="btnImport">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LOGOUT -->
+    <div class="modal-overlay" id="modalLogout" style="display:none;">
+        <div class="modal-card"><h3>Konfirmasi Logout</h3><p>Apakah Anda yakin ingin keluar?</p>
+            <div class="modal-buttons"><button class="btn btn-outline" onclick="tutupModal('modalLogout')">Batal</button><button class="btn btn-danger" onclick="konfirmasiLogout()">Ya, Keluar</button></div>
+        </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="login-overlay" id="halamanLogin">
+        <div class="login-card"><div class="login-logo">AD</div><h1>IPIM</h1><p class="subtitle">Sistem Manajemen Kehadiran Mahasiswa</p>
+            <div class="role-selector"><button class="role-btn active" data-role="dosen" onclick="pilihRole('dosen',this)">Dosen</button><button class="role-btn" data-role="admin" onclick="pilihRole('admin',this)">Admin</button></div>
+            <form id="formLogin"><div class="form-group"><input type="text" id="username" placeholder="Username" required></div><div class="form-group"><input type="password" id="password" placeholder="Password" required></div><div class="pesan-error" id="pesanError"></div><button type="submit" class="btn-login">Masuk</button></form>
+        </div>
+    </div>
+
+    <!-- HALAMAN UTAMA -->
+    <div id="halamanUtama" style="display:none;width:100%;">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><button class="hamburger" onclick="toggleSidebar()">☰</button><div class="sidebar-brand">IPIM<span>Digital</span></div></div>
+            <div class="profil-sidebar"><div class="avatar" id="avatarSidebar" onclick="document.getElementById('uploadFoto').click()" title="Klik ganti foto">A</div><input type="file" id="uploadFoto" accept="image/*" style="display:none;" onchange="uploadFotoProfil(event)"><div class="profil-text"><div class="nama" id="namaSidebar">-</div><div class="role" id="roleSidebar">-</div></div></div>
+            <div class="sidebar-menu" id="sidebarMenu"></div>
+            <div class="sidebar-footer"><button class="btn-logout" onclick="bukaModal('modalLogout')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Keluar</button>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="mobile-header"><button class="hamburger-mobile" onclick="openSidebar()">☰</button><span style="font-weight:700;color:var(--green);">Absensi<span style="color:var(--orange);">Digital</span></span></div>
+            <div class="top-bar"><div><h1 id="judulHalaman">Dashboard</h1><div class="breadcrumb" id="breadcrumb">Beranda</div></div><div class="date" id="tanggalHari"></div></div>
+            <div id="semesterBar"></div>
+            <div id="contentArea" class="page-content"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://mvhrnrvdhibdtvulmqkr.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12aHJucnZkaGliZHR2dWxtcWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MTc5MjksImV4cCI6MjA5NDQ5MzkyOX0.IsS1wSXtGb0Keroc3UvsiVT38u-gea0_IVdAm1snBVw'
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        let currentUser = null, currentRole = 'dosen', hapusTarget = null, importType = ''
+        const HARI_AKTIF = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Sabtu', 'Ahad']
+
+        // SVG ICONS
+        const icons = {
+            dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+            dosen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+            mahasiswa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+            kelas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+            matkul: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+            jadwal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+            rekap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+            pertemuan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+            logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+            dosenStat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+            mhsStat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>',
+            kelasStat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>',
+            mkStat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg>'
+        }
+
+        // ==================== UTILS ====================
+        function showSpinner() { document.getElementById('spinner').style.display = 'flex' }
+        function hideSpinner() { document.getElementById('spinner').style.display = 'none' }
+        function bukaModal(id) { document.getElementById(id).style.display = 'flex' }
+        function tutupModal(id) { document.getElementById(id).style.display = 'none' }
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('show') }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show') }
+        function toggleSidebar() {
+            if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show') }
+            else { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('mainContent').classList.toggle('expanded') }
+        }
+        function formatDate() { const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']; const now = new Date(); return hari[now.getDay()] + ', ' + now.getDate() + '/' + (now.getMonth()+1) + '/' + now.getFullYear() }
+
+        // ==================== LOGIN ====================
+        function pilihRole(role, btn) { currentRole = role; document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('formLogin').reset(); document.getElementById('pesanError').style.display = 'none' }
+        document.getElementById('formLogin').addEventListener('submit', async function(e) {
+            e.preventDefault()
+            const username = document.getElementById('username').value.trim(), password = document.getElementById('password').value.trim()
+            const pesanError = document.getElementById('pesanError'), btn = this.querySelector('.btn-login')
+            pesanError.style.display = 'none'; btn.disabled = true; btn.textContent = 'Memeriksa...'
+            if (currentRole === 'admin') {
+                const { data, error } = await db.from('admin').select('*').eq('username', username).single()
+                if (error || !data || data.password !== password) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+                currentUser = { ...data, role: 'admin' }
+            } else {
+                const { data, error } = await db.from('dosen').select('*').eq('username', username).single()
+                if (error || !data || data.password !== password) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+                currentUser = { ...data, role: 'dosen' }
+            }
+            localStorage.setItem('user', JSON.stringify(currentUser))
+            tampilkanUtama()
+        })
+
+        async function tampilkanUtama() {
+            document.getElementById('halamanLogin').style.display = 'none'
+            document.getElementById('halamanUtama').style.display = 'flex'
+            updateAvatar()
+            document.getElementById('namaSidebar').textContent = currentUser.nama
+            document.getElementById('roleSidebar').textContent = currentUser.role === 'admin' ? 'Administrator' : (currentUser.gelar || 'Dosen')
+            document.getElementById('tanggalHari').textContent = formatDate()
+            await renderSemesterBar()
+            if (window.innerWidth <= 768) closeSidebar()
+
+            const menu = document.getElementById('sidebarMenu')
+            if (currentUser.role === 'admin') {
+                menu.innerHTML = `
+                    <div class="menu-section">Utama</div>
+                    <div class="menu-item active" onclick="loadPage('adminDashboard')"><span class="menu-icon">${icons.dashboard}</span><span class="menu-text">Dashboard</span></div>
+                    <div class="menu-section">Kelola Data</div>
+                    <div class="menu-item" onclick="loadPage('adminDosen')"><span class="menu-icon">${icons.dosen}</span><span class="menu-text">Dosen</span></div>
+                    <div class="menu-item" onclick="loadPage('adminMahasiswa')"><span class="menu-icon">${icons.mahasiswa}</span><span class="menu-text">Mahasiswa</span></div>
+                    <div class="menu-item" onclick="loadPage('adminKelas')"><span class="menu-icon">${icons.kelas}</span><span class="menu-text">Kelas</span></div>
+                    <div class="menu-item" onclick="loadPage('adminMatkul')"><span class="menu-icon">${icons.matkul}</span><span class="menu-text">Mata Kuliah</span></div>
+                    <div class="menu-item" onclick="loadPage('adminJadwal')"><span class="menu-icon">${icons.jadwal}</span><span class="menu-text">Jadwal</span></div>
+                    <div class="menu-section">Akademik</div>
+                    <div class="menu-item" onclick="loadPage('adminRekap')"><span class="menu-icon">${icons.rekap}</span><span class="menu-text">Rekap Absensi</span></div>
+                    <div class="menu-item" onclick="loadPage('adminPertemuan')"><span class="menu-icon">${icons.pertemuan}</span><span class="menu-text">Set Pertemuan</span></div>
+                    <div class="menu-item" onclick="loadPage('adminLaporan')"><span class="menu-icon">${icons.pertemuan}</span><span class="menu-text">Laporan Dosen</span></div>
+                `
+            } else {
+                var menuHtml = '';
+                menuHtml += '<div class="menu-section">Utama</div>';
+                menuHtml += '<div class="menu-item active" onclick="loadPage(\'dosenDashboard\')"><span class="menu-icon">' + icons.dashboard + '</span><span class="menu-text">Dashboard</span></div>';
+                menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenJadwal\')"><span class="menu-icon">' + icons.jadwal + '</span><span class="menu-text">Jadwal Saya</span></div>';
+                menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenRekap\')"><span class="menu-icon">' + icons.rekap + '</span><span class="menu-text">Rekap Kehadiran</span></div>';
+                menuHtml += '<div class="menu-section">Akademik</div>';
+                menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenPenilaian\')"><span class="menu-icon">' + icons.matkul + '</span><span class="menu-text">Penilaian</span></div>';
+                menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenSilabus\')"><span class="menu-icon">' + icons.rekap + '</span><span class="menu-text">Silabus</span></div>';
+                menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenLaporan\')"><span class="menu-icon">' + icons.pertemuan + '</span><span class="menu-text">Laporan Bulanan</span></div>';
+                menu.innerHTML = menuHtml;
+            }
+            if (currentUser.role === 'admin') loadPage('adminDashboard')
+            else loadPage('dosenDashboard')
+        }
+
+        function updateAvatar() {
+            const av = document.getElementById('avatarSidebar')
+            if (currentUser.foto_url) av.innerHTML = `<img src="${currentUser.foto_url}" alt="foto">`
+            else av.textContent = currentUser.nama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+        }
+
+        async function uploadFotoProfil(event) {
+            const file = event.target.files[0]
+            if (!file || file.size > 2*1024*1024) { alert('Foto maksimal 2MB!'); return }
+            showSpinner()
+            const reader = new FileReader()
+            reader.onload = async function(e) {
+                const base64 = e.target.result
+                if (currentUser.role === 'dosen') await db.from('dosen').update({ foto_url: base64 }).eq('id', currentUser.id)
+                currentUser.foto_url = base64
+                localStorage.setItem('user', JSON.stringify(currentUser))
+                updateAvatar()
+                hideSpinner()
+            }
+            reader.readAsDataURL(file)
+        }
+
+        // ==================== SEMESTER ====================
+        async function getSettings() { const { data } = await db.from('app_settings').select('*'); const s = {}; data?.forEach(d => s[d.key]=d.value); return s }
+        async function renderSemesterBar() {
+            const settings = await getSettings()
+            document.getElementById('semesterBar').innerHTML = `
+                <span class="semester-badge" onclick="${currentUser.role==='admin'?'editSemester()':''}" title="${currentUser.role==='admin'?'Klik untuk edit':''}">
+                    Semester ${settings.semester||'Ganjil'} | TA ${settings.tahun_ajaran||'2024/2025'} ${currentUser.role==='admin'?' ✏️':''}
+                </span>
+            `
+        }
+        function editSemester() {
+            openForm('Edit Semester & Tahun Ajaran', [
+                { label:'Semester', id:'fsemester', type:'select', options:[{v:'Ganjil',t:'Ganjil'},{v:'Genap',t:'Genap'}] },
+                { label:'Tahun Ajaran', id:'ftahun', value:'', placeholder:'2024/2025' }
+            ], async () => {
+                const sem = document.getElementById('fsemester').value, ta = document.getElementById('ftahun').value.trim()
+                if (!ta) { alert('Tahun ajaran wajib!'); return }
+                showSpinner()
+                await db.from('app_settings').upsert({ key:'semester', value:sem }, { onConflict:'key' })
+                await db.from('app_settings').upsert({ key:'tahun_ajaran', value:ta }, { onConflict:'key' })
+                tutupModal('modalForm'); await renderSemesterBar(); hideSpinner()
+            })
+        }
+
+        // ==================== LOAD PAGE ====================
+        async function loadPage(page) {
+            showSpinner()
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'))
+            if (currentUser.role === 'dosen') {
+                const { data } = await db.from('dosen').select('*').eq('id', currentUser.id).single()
+                if (data) { currentUser = { ...data, role:'dosen' }; localStorage.setItem('user', JSON.stringify(currentUser)) }
+            }
+            if (window.innerWidth <= 768) closeSidebar()
+            switch(page) {
+                case 'adminDashboard': await adminDashboard(); setActive(0); break
+                case 'adminDosen': await adminDosen(); setActive(1); break
+                case 'adminMahasiswa': await adminMahasiswa(); setActive(2); break
+                case 'adminKelas': await adminKelas(); setActive(3); break
+                case 'adminMatkul': await adminMatkul(); setActive(4); break
+                case 'adminJadwal': await adminJadwal(); setActive(5); break
+                case 'adminRekap': await adminRekap(); setActive(6); break
+                case 'adminPertemuan': await adminPertemuan(); setActive(7); break
+                case 'adminLaporan': await adminLaporan(); setActive(8); break
+                case 'dosenDashboard': await dosenDashboard(); setActive(0); break
+                case 'dosenJadwal': await dosenJadwal(); setActive(1); break
+                case 'dosenRekap': await dosenRekap(); setActive(2); break
+                case 'dosenPenilaian': await dosenPenilaian(); setActive(3); break
+                case 'dosenSilabus': await dosenSilabus(); setActive(4); break
+                case 'dosenLaporan': await dosenLaporan(); setActive(5); break
+            }
+            hideSpinner()
+        }
+        function setActive(i) { const items = document.querySelectorAll('.menu-item'); if (items[i]) items[i].classList.add('active') }
+
+        // ==================== CRUD HELPERS ====================
+        function openForm(title, fields, onSubmit) {
+            document.getElementById('modalFormContent').innerHTML = `
+                <h3>${title}</h3>
+                ${fields.map(f => `<div class="form-group"><label>${f.label}</label>${f.type==='select'?`<select id="${f.id}">${f.options.map(o=>`<option value="${o.v}" ${o.s?'selected':''}>${o.t}</option>`).join('')}</select>`:`<input type="${f.type||'text'}" id="${f.id}" value="${f.value||''}" placeholder="${f.placeholder||''}">`}</div>`).join('')}
+                <div class="modal-buttons"><button class="btn btn-outline" onclick="tutupModal('modalForm')">Batal</button><button class="btn btn-primary" id="btnSubmitForm">Simpan</button></div>
+            `
+            document.getElementById('btnSubmitForm').addEventListener('click', onSubmit)
+            bukaModal('modalForm')
+        }
+
+        function confirmDelete(id, pesan, callback) {
+            hapusTarget = { id, callback }
+            document.getElementById('pesanHapus').textContent = pesan
+            document.getElementById('btnKonfirmasiHapus').onclick = async () => { showSpinner(); await callback(id); tutupModal('modalHapus'); hideSpinner() }
+            bukaModal('modalHapus')
+        }
+
+        function actionButtons(editFn, deleteFn) {
+            return `<div class="action-btns"><button class="btn btn-warning btn-icon btn-sm" onclick="${editFn}" title="Edit">✏️</button><button class="btn btn-danger btn-icon btn-sm" onclick="${deleteFn}" title="Hapus">🗑️</button></div>`
+        }
+
+        // ==================== IMPORT/EXPORT ====================
+        function openImport(type) {
+            importType = type
+            document.getElementById('fileImport').value = ''
+            document.getElementById('previewImport').innerHTML = ''
+            document.getElementById('btnImport').onclick = async () => {
+                const file = document.getElementById('fileImport').files[0]
+                if (!file) { alert('Pilih file!'); return }
+                showSpinner()
+                const reader = new FileReader()
+                reader.onload = async function(e) {
+                    const wb = XLSX.read(e.target.result, { type:'array' })
+                    const ws = wb.Sheets[wb.SheetNames[0]]
+                    const data = XLSX.utils.sheet_to_json(ws)
+                    if (data.length === 0) { alert('Data kosong!'); hideSpinner(); return }
+                    for (const row of data) {
+                        if (importType === 'dosen') await db.from('dosen').insert([{ nama:row.nama||row.Nama||'', gelar:row.gelar||row.Gelar||'', username:row.username||row.Username||'', password:row.password||row.Password||'password123' }])
+                        else if (importType === 'mahasiswa') await db.from('mahasiswa').insert([{ nim:String(row.nim||row.NIM||''), nama:row.nama||row.Nama||'', kelas_id:null }])
+                    }
+                    tutupModal('modalImport')
+                    if (importType === 'dosen') loadPage('adminDosen')
+                    else loadPage('adminMahasiswa')
+                    hideSpinner()
+                }
+                reader.readAsArrayBuffer(file)
+            }
+            bukaModal('modalImport')
+        }
+
+        async function exportData(type) {
+            showSpinner()
+            let data, filename
+            if (type === 'dosen') {
+                const { data: d } = await db.from('dosen').select('nama, gelar, username').order('nama')
+                data = d; filename = 'data_dosen.xlsx'
+            } else {
+                const { data: d } = await db.from('mahasiswa').select('nim, nama').order('nama')
+                data = d; filename = 'data_mahasiswa.xlsx'
+            }
+            if (!data || data.length === 0) { alert('Tidak ada data!'); hideSpinner(); return }
+            const ws = XLSX.utils.json_to_sheet(data)
+            const wb = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(wb, ws, 'Data')
+            XLSX.writeFile(wb, filename)
+            hideSpinner()
+        }
+
+        // ==================== ADMIN DASHBOARD ====================
+        async function adminDashboard() {
+            document.getElementById('judulHalaman').textContent = 'Dashboard'
+            document.getElementById('breadcrumb').textContent = 'Admin / Beranda'
+            const [{ data: dosen }, { data: mhs }, { data: kelas }, { data: mk }] = await Promise.all([
+                db.from('dosen').select('id',{count:'exact'}), db.from('mahasiswa').select('id',{count:'exact'}),
+                db.from('kelas').select('id',{count:'exact'}), db.from('mata_kuliah').select('id',{count:'exact'})
+            ])
+            const hariIni = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][new Date().getDay()]
+            const { data: jadwal } = await db.from('jadwal').select('*, dosen(nama, gelar), mata_kuliah(nama_mk), kelas(nama_kelas)').eq('hari', hariIni).order('jam_mulai')
+
+            document.getElementById('contentArea').innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon green">${icons.dosenStat}</div><div class="stat-value">${dosen?.length||0}</div><div class="stat-label">Total Dosen</div></div>
+                    <div class="stat-card"><div class="stat-icon orange">${icons.mhsStat}</div><div class="stat-value">${mhs?.length||0}</div><div class="stat-label">Total Mahasiswa</div></div>
+                    <div class="stat-card"><div class="stat-icon blue">${icons.kelasStat}</div><div class="stat-value">${kelas?.length||0}</div><div class="stat-label">Total Kelas</div></div>
+                    <div class="stat-card"><div class="stat-icon red">${icons.mkStat}</div><div class="stat-value">${mk?.length||0}</div><div class="stat-label">Total Mata Kuliah</div></div>
+                </div>
+                <div class="card">
+                    <h3><span>Jadwal Mengajar Hari Ini (${hariIni})</span></h3>
+                    ${jadwal && jadwal.length > 0 ? `<div class="jadwal-grid">${jadwal.map(j => `<div class="jadwal-card-mini"><div class="dosen-nama">${j.dosen?.gelar||''} ${j.dosen?.nama||'-'}</div><div class="dosen-info">${j.mata_kuliah?.nama_mk} | Kelas ${j.kelas?.nama_kelas}</div><div class="dosen-info">${j.jam_mulai?.substring(0,5)}-${j.jam_selesai?.substring(0,5)} | ${j.ruangan||'-'}</div></div>`).join('')}</div>` : '<p style="text-align:center;color:#9ca3af;padding:20px;">Tidak ada jadwal hari ini</p>'}
+                </div>
+            `
+        }
+
+        // ==================== ADMIN: CRUD DOSEN ====================
+        async function adminDosen() {
+            document.getElementById('judulHalaman').textContent = 'Data Dosen'; document.getElementById('breadcrumb').textContent = 'Admin / Dosen'
+            const { data } = await db.from('dosen').select('*').order('nama')
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Dosen (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formDosen()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('dosen')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('dosen')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>Nama</th><th>Gelar</th><th>Username</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(d => `<tr><td>${d.nama}</td><td>${d.gelar||'-'}</td><td>${d.username}</td><td>${actionButtons(`formDosen('${d.id}')`,`confirmDelete('${d.id}','Hapus ${d.nama}?',deleteDosen)`)}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;">Tidak ada data</td></tr>'}</tbody></table></div></div>`
+        }
+
+        async function formDosen(id = null) {
+            let d = { nama:'', gelar:'', username:'', password:'' }; if (id) { const { data } = await db.from('dosen').select('*').eq('id', id).single(); if (data) d = data }
+            openForm(id?'Edit Dosen':'Tambah Dosen', [
+                { label:'Nama', id:'fnama', value:d.nama }, { label:'Gelar', id:'fgelar', value:d.gelar||'', placeholder:'Ustadz, Dr., dll' },
+                { label:'Username', id:'fusername', value:d.username }, { label:'Password', id:'fpassword', type:'password', value:d.password||'', placeholder:id?'Kosongkan jika tidak diganti':'' }
+            ], async () => {
+                const payload = { nama:document.getElementById('fnama').value.trim(), gelar:document.getElementById('fgelar').value.trim(), username:document.getElementById('fusername').value.trim().toLowerCase() }
+                const pass = document.getElementById('fpassword').value.trim(); if (pass) payload.password = pass
+                if (!payload.nama || !payload.username) { alert('Nama dan Username wajib!'); return }
+                showSpinner(); if (id) await db.from('dosen').update(payload).eq('id', id); else await db.from('dosen').insert([payload])
+                tutupModal('modalForm'); loadPage('adminDosen')
+            })
+        }
+        async function deleteDosen(id) { await db.from('dosen').delete().eq('id', id); loadPage('adminDosen') }
+
+        // ==================== ADMIN: CRUD MAHASISWA ====================
+        async function adminMahasiswa() {
+            document.getElementById('judulHalaman').textContent = 'Data Mahasiswa'; document.getElementById('breadcrumb').textContent = 'Admin / Mahasiswa'
+            const { data } = await db.from('mahasiswa').select('*').order('nama')
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mahasiswa (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formMahasiswa()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('mahasiswa')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('mahasiswa')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td>${m.kelas_id||'-'}</td><td>${actionButtons(`formMahasiswa('${m.id}')`,`confirmDelete('${m.id}','Hapus ${m.nama}?',deleteMahasiswa)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
+        }
+
+        async function formMahasiswa(id = null) {
+            let m = { nim:'', nama:'', kelas_id:'' }; if (id) { const { data } = await db.from('mahasiswa').select('*').eq('id', id).single(); if (data) m = data }
+            openForm(id?'Edit Mahasiswa':'Tambah Mahasiswa', [
+                { label:'NIM', id:'fnim', value:m.nim }, { label:'Nama', id:'fnama', value:m.nama },
+                { label:'Kelas', id:'fkelas', value:m.kelas_id||'', placeholder:'Contoh: A, 2A, 2B (isi bebas)' }
+            ], async () => {
+                const payload = { nim:document.getElementById('fnim').value.trim(), nama:document.getElementById('fnama').value.trim(), kelas_id:document.getElementById('fkelas').value.trim()||null }
+                if (!payload.nim || !payload.nama) { alert('NIM dan Nama wajib!'); return }
+                showSpinner(); if (id) await db.from('mahasiswa').update(payload).eq('id', id); else await db.from('mahasiswa').insert([payload])
+                tutupModal('modalForm'); loadPage('adminMahasiswa')
+            })
+        }
+        async function deleteMahasiswa(id) { await db.from('mahasiswa').delete().eq('id', id); loadPage('adminMahasiswa') }
+
+        // ==================== ADMIN: CRUD KELAS & MATKUL ====================
+        async function adminKelas() {
+            document.getElementById('judulHalaman').textContent = 'Data Kelas'; document.getElementById('breadcrumb').textContent = 'Admin / Kelas'
+            const { data } = await db.from('kelas').select('*').order('nama_kelas')
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Kelas (${data?.length||0})</span><button class="btn btn-primary btn-sm" onclick="formKelas()">+ Tambah</button></h3><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama</th><th>Tingkat</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(k => `<tr><td>${k.kode_kelas}</td><td>${k.nama_kelas}</td><td>${k.tingkat||'-'}</td><td>${actionButtons(`formKelas('${k.id}')`,`confirmDelete('${k.id}','Hapus kelas ${k.nama_kelas}?',deleteKelas)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
+        }
+        async function formKelas(id = null) {
+            let k = { kode_kelas:'', nama_kelas:'', tingkat:'' }; if (id) { const { data } = await db.from('kelas').select('*').eq('id', id).single(); if (data) k = data }
+            openForm(id?'Edit Kelas':'Tambah Kelas', [
+                { label:'Kode', id:'fkode', value:k.kode_kelas, placeholder:'K01' }, { label:'Nama Kelas', id:'fnama', value:k.nama_kelas, placeholder:'A, 2A' }, { label:'Tingkat', id:'ftingkat', value:k.tingkat||'', placeholder:'1,2,3,4' }
+            ], async () => {
+                const payload = { kode_kelas:document.getElementById('fkode').value.trim(), nama_kelas:document.getElementById('fnama').value.trim(), tingkat:document.getElementById('ftingkat').value.trim()||null }
+                if (!payload.kode_kelas || !payload.nama_kelas) { alert('Kode dan Nama wajib!'); return }
+                showSpinner(); if (id) await db.from('kelas').update(payload).eq('id', id); else await db.from('kelas').insert([payload])
+                tutupModal('modalForm'); loadPage('adminKelas')
+            })
+        }
+        async function deleteKelas(id) { await db.from('kelas').delete().eq('id', id); loadPage('adminKelas') }
+
+        async function adminMatkul() {
+            document.getElementById('judulHalaman').textContent = 'Data Mata Kuliah'; document.getElementById('breadcrumb').textContent = 'Admin / Mata Kuliah'
+            const { data } = await db.from('mata_kuliah').select('*').order('nama_mk')
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mata Kuliah (${data?.length||0})</span><button class="btn btn-primary btn-sm" onclick="formMatkul()">+ Tambah</button></h3><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama</th><th>Bidang</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(mk => `<tr><td>${mk.kode_mk}</td><td>${mk.nama_mk}</td><td>${mk.bidang||'-'}</td><td>${actionButtons(`formMatkul('${mk.id}')`,`confirmDelete('${mk.id}','Hapus ${mk.nama_mk}?',deleteMatkul)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
+        }
+        async function formMatkul(id = null) {
+            let mk = { kode_mk:'', nama_mk:'', bidang:'' }; if (id) { const { data } = await db.from('mata_kuliah').select('*').eq('id', id).single(); if (data) mk = data }
+            openForm(id?'Edit Mata Kuliah':'Tambah Mata Kuliah', [
+                { label:'Kode MK', id:'fkode', value:mk.kode_mk, placeholder:'MK01' }, { label:'Nama', id:'fnama', value:mk.nama_mk }, { label:'Bidang', id:'fbidang', value:mk.bidang||'' }
+            ], async () => {
+                const payload = { kode_mk:document.getElementById('fkode').value.trim(), nama_mk:document.getElementById('fnama').value.trim(), bidang:document.getElementById('fbidang').value.trim()||null }
+                if (!payload.kode_mk || !payload.nama_mk) { alert('Kode dan Nama wajib!'); return }
+                showSpinner(); if (id) await db.from('mata_kuliah').update(payload).eq('id', id); else await db.from('mata_kuliah').insert([payload])
+                tutupModal('modalForm'); loadPage('adminMatkul')
+            })
+        }
+        async function deleteMatkul(id) { await db.from('mata_kuliah').delete().eq('id', id); loadPage('adminMatkul') }
+
+        // ==================== ADMIN: JADWAL ====================
+        async function adminJadwal() {
+            document.getElementById('judulHalaman').textContent = 'Semua Jadwal'; document.getElementById('breadcrumb').textContent = 'Admin / Jadwal'
+            const { data } = await db.from('jadwal').select('*, dosen(nama, gelar), mata_kuliah(nama_mk), kelas(nama_kelas)')
+            const urutan = {'Senin':1,'Selasa':2,'Rabu':3,'Kamis':4,'Sabtu':5,'Ahad':6}
+            if (data) data.sort((a,b) => (urutan[a.hari]||9) - (urutan[b.hari]||9))
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Semua Jadwal (${data?.length||0})</span><button class="btn btn-primary btn-sm" onclick="formJadwal()">+ Tambah</button></h3><div class="table-wrap"><table><thead><tr><th>Hari</th><th>Jam</th><th>Dosen</th><th>Matkul</th><th>Kelas</th><th>Ruangan</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(j => `<tr><td>${j.hari}</td><td>${j.jam_mulai?.substring(0,5)}-${j.jam_selesai?.substring(0,5)}</td><td>${j.dosen?.gelar||''} ${j.dosen?.nama||'-'}</td><td>${j.mata_kuliah?.nama_mk}</td><td>${j.kelas?.nama_kelas}</td><td>${j.ruangan||'-'}</td><td>${actionButtons(`formJadwal('${j.id}')`,`confirmDelete('${j.id}','Hapus jadwal ini?',deleteJadwal)`)}</td></tr>`).join('')||'<tr><td colspan="7">Belum ada jadwal</td></tr>'}</tbody></table></div></div>`
+        }
+
+        async function formJadwal(id = null) {
+            let j = { dosen_id:'', mk_id:'', kelas_id:'', hari:'', jam_mulai:'', jam_selesai:'', ruangan:'', max_pertemuan:16, min_kehadiran:75 }
+            if (id) { const { data } = await db.from('jadwal').select('*').eq('id', id).single(); if (data) j = data }
+            const [{ data: dosen }, { data: matkul }, { data: kelas }] = await Promise.all([db.from('dosen').select('id, nama, gelar').order('nama'), db.from('mata_kuliah').select('id, nama_mk').order('nama_mk'), db.from('kelas').select('id, nama_kelas').order('nama_kelas')])
+            openForm(id?'Edit Jadwal':'Tambah Jadwal', [
+                { label:'Dosen', id:'fdosen', type:'select', options:[{v:'',t:'-- Pilih --',s:!j.dosen_id},...(dosen||[]).map(d=>({v:d.id,t:`${d.gelar||''} ${d.nama}`,s:d.id===j.dosen_id}))] },
+                { label:'Mata Kuliah', id:'fmk', type:'select', options:[{v:'',t:'-- Pilih --',s:!j.mk_id},...(matkul||[]).map(m=>({v:m.id,t:m.nama_mk,s:m.id===j.mk_id}))] },
+                { label:'Kelas', id:'fkelas', type:'select', options:[{v:'',t:'-- Pilih --',s:!j.kelas_id},...(kelas||[]).map(k=>({v:k.id,t:k.nama_kelas,s:k.id===j.kelas_id}))] },
+                { label:'Hari', id:'fhari', type:'select', options:HARI_AKTIF.map(h=>({v:h,t:h,s:h===j.hari})) },
+                { label:'Jam Mulai', id:'fjam_mulai', type:'time', value:j.jam_mulai?.substring(0,5)||'' },
+                { label:'Jam Selesai', id:'fjam_selesai', type:'time', value:j.jam_selesai?.substring(0,5)||'' },
+                { label:'Ruangan', id:'fruangan', value:j.ruangan||'', placeholder:'Ruang A' },
+                { label:'Max Pertemuan', id:'fmax', type:'number', value:String(j.max_pertemuan||16) },
+                { label:'Min Kehadiran (%)', id:'fmin', type:'number', value:String(j.min_kehadiran||75) }
+            ], async () => {
+                const payload = { dosen_id:document.getElementById('fdosen').value||null, mk_id:document.getElementById('fmk').value||null, kelas_id:document.getElementById('fkelas').value||null, hari:document.getElementById('fhari').value, jam_mulai:document.getElementById('fjam_mulai').value, jam_selesai:document.getElementById('fjam_selesai').value, ruangan:document.getElementById('fruangan').value.trim()||null, max_pertemuan:parseInt(document.getElementById('fmax').value)||16, min_kehadiran:parseInt(document.getElementById('fmin').value)||75 }
+                if (!payload.dosen_id || !payload.mk_id || !payload.kelas_id || !payload.hari) { alert('Lengkapi semua!'); return }
+                showSpinner(); if (id) await db.from('jadwal').update(payload).eq('id', id); else await db.from('jadwal').insert([payload])
+                tutupModal('modalForm'); loadPage('adminJadwal')
+            })
+        }
+        async function deleteJadwal(id) { await db.from('jadwal').delete().eq('id', id); loadPage('adminJadwal') }
+
+        // ==================== ADMIN: REKAP & PERTEMUAN ====================
+        async function adminRekap() {
+            document.getElementById('judulHalaman').textContent = 'Rekap Absensi'; document.getElementById('breadcrumb').textContent = 'Admin / Rekap'
+            const { data: jadwal } = await db.from('jadwal').select('id, min_kehadiran, max_pertemuan, dosen!inner(nama, gelar), mata_kuliah!inner(nama_mk)')
+            const groups = {}
+            jadwal?.forEach(j => { const key = `${j.mata_kuliah.nama_mk}|${j.dosen.nama}`; if (!groups[key]) groups[key] = { matkul:j.mata_kuliah.nama_mk, dosen:`${j.dosen.gelar||''} ${j.dosen.nama}`, ids:[], min:j.min_kehadiran||75, max:j.max_pertemuan||16 }; groups[key].ids.push(j.id) })
+            let html = '<p style="margin-bottom:16px;color:var(--text-light);font-size:0.85em;">Pilih mata kuliah untuk melihat rekap kehadiran</p>'
+            for (const key in groups) {
+                const g = groups[key]
+                const { data: absensi } = await db.from('absensi').select('mahasiswa_id, status, mahasiswa(nim, nama)').in('jadwal_id', g.ids)
+                const rekap = {}
+                absensi?.forEach(a => { const mid = a.mahasiswa_id; if (!rekap[mid]) rekap[mid] = { nim:a.mahasiswa?.nim, nama:a.mahasiswa?.nama, Hadir:g.max, Izin:0, Sakit:0, 'Jaga Malam':0, Alpha:0 }; if (rekap[mid][a.status] !== undefined) { rekap[mid][a.status]++; rekap[mid].Hadir-- } })
+                const rows = Object.values(rekap); if (rows.length === 0) continue
+                const safeKey = key.replace(/[^a-zA-Z]/g,'')
+                html += `<div class="card"><h3><span>${g.matkul} — ${g.dosen}</span><span style="font-weight:400;font-size:0.7em;">Min: <input type="number" class="input-mini" id="min_${safeKey}" value="${g.min}" min="0" max="100">% <button class="btn btn-xs btn-primary" onclick="updateMin('${g.ids[0]}','${safeKey}')">Simpan</button></span></h3><button class="btn btn-outline btn-sm" style="margin-bottom:12px;" onclick="exportExcel('${safeKey}')">Download Excel</button><div class="table-wrap"><table id="tbl_${safeKey}"><thead><tr><th>NIM</th><th>Nama</th><th class="text-center">Hadir</th><th class="text-center">Izin</th><th class="text-center">Sakit</th><th class="text-center">Jaga Malam</th><th class="text-center">Alpha</th><th class="text-center">Tidak Hadir</th><th class="text-center">%</th></tr></thead><tbody>${rows.map(r => { const th = r.Izin+r.Sakit+r['Jaga Malam']+r.Alpha; const p = ((r.Hadir/g.max)*100).toFixed(1); return `<tr><td>${r.nim}</td><td>${r.nama}</td><td class="text-center"><span class="badge badge-success">${r.Hadir}</span></td><td class="text-center">${r.Izin||'-'}</td><td class="text-center">${r.Sakit||'-'}</td><td class="text-center">${r['Jaga Malam']||'-'}</td><td class="text-center">${r.Alpha||'-'}</td><td class="text-center ${th>3?'text-danger':''}">${th}</td><td class="text-center ${p>=g.min?'text-success':'text-danger'}">${p}%</td></tr>` }).join('')}</tbody></table></div></div>`
+            }
+            document.getElementById('contentArea').innerHTML = html || '<div class="card"><p style="text-align:center;">Belum ada data</p></div>'
+        }
+
+        async function updateMin(jadwalId, key) { const val = parseInt(document.getElementById('min_'+key).value); if (val<0||val>100) { alert('0-100!'); return }; await db.from('jadwal').update({ min_kehadiran:val }).eq('id', jadwalId); alert('Berhasil!'); loadPage('adminRekap') }
+        function exportExcel(key) { const table = document.getElementById('tbl_'+key); if (!table) return; const ws = XLSX.utils.table_to_sheet(table); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Rekap'); XLSX.writeFile(wb, 'rekap_absensi.xlsx') }
+
+        async function adminPertemuan() {
+            document.getElementById('judulHalaman').textContent = 'Set Pertemuan'; document.getElementById('breadcrumb').textContent = 'Admin / Pertemuan'
+            const { data } = await db.from('jadwal').select('*, dosen(nama), mata_kuliah(nama_mk), kelas(nama_kelas)').order('hari')
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3>Atur Max Pertemuan</h3><div class="table-wrap"><table><thead><tr><th>Dosen</th><th>Matkul</th><th>Kelas</th><th>Hari</th><th>Max</th><th>Aksi</th></tr></thead><tbody>${data?.map(j => `<tr><td>${j.dosen?.nama}</td><td>${j.mata_kuliah?.nama_mk}</td><td>${j.kelas?.nama_kelas}</td><td>${j.hari}</td><td><input type="number" id="p_${j.id}" value="${j.max_pertemuan||16}" class="input-mini"></td><td><button class="btn btn-primary btn-xs" onclick="simpanPertemuan('${j.id}')">Simpan</button></td></tr>`).join('')||'<tr><td colspan="6">Belum ada</td></tr>'}</tbody></table></div></div>`
+        }
+        async function simpanPertemuan(id) { const v = parseInt(document.getElementById('p_'+id).value); if (v<1||v>20) { alert('1-20!'); return }; await db.from('jadwal').update({ max_pertemuan:v }).eq('id', id); alert('Berhasil!') }
+
+        // ==================== DOSEN ====================
+        async function dosenDashboard() {
+            document.getElementById('judulHalaman').textContent = 'Dashboard'; document.getElementById('breadcrumb').textContent = 'Dosen / Beranda'
+            const hariIni = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][new Date().getDay()]
+            const { data: jadwal } = await db.from('jadwal').select('id, jam_mulai, jam_selesai, ruangan, max_pertemuan, mata_kuliah(nama_mk), kelas(nama_kelas)').eq('dosen_id', currentUser.id).eq('hari', hariIni).order('jam_mulai')
+            const jadwalIds = jadwal ? jadwal.map(j => j.id) : ['none']
+            const { data: absensi } = await db.from('absensi').select('mahasiswa_id, status, mahasiswa(nama, nim)').in('jadwal_id', jadwalIds)
+            const tidakHadir = {}; absensi?.forEach(a => { if (!tidakHadir[a.mahasiswa_id]) tidakHadir[a.mahasiswa_id] = { count:0, nama:a.mahasiswa?.nama, nim:a.mahasiswa?.nim }; tidakHadir[a.mahasiswa_id].count++ })
+            const jarang = Object.values(tidakHadir).filter(m => m.count >= 10).sort((a,b) => b.count - a.count)
+            const statusCount = { Izin:0, Sakit:0, 'Jaga Malam':0, Alpha:0 }; absensi?.forEach(a => { if (statusCount[a.status] !== undefined) statusCount[a.status]++ })
+            document.getElementById('contentArea').innerHTML = `<div class="grid-2"><div class="card"><h3>Jadwal Hari Ini</h3>${jadwal?.map(j => `<div style="background:#f9fafb;padding:14px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border-left:4px solid var(--green);"><div><strong>${j.mata_kuliah.nama_mk}</strong><p style="color:#6b7280;font-size:0.8em;">Kelas ${j.kelas.nama_kelas} | ${j.jam_mulai?.substring(0,5)}-${j.jam_selesai?.substring(0,5)}</p></div><button class="btn btn-primary btn-sm" onclick="bukaAbsensi('${j.id}')">Absensi</button></div>`).join('')||'<p style="text-align:center;color:#9ca3af;">Tidak ada jadwal</p>'}</div><div class="card"><h3>Statistik</h3><canvas id="chartDosen"></canvas></div></div>${jarang.length>0?`<div class="card"><h3>Mahasiswa >10x Tidak Hadir</h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Total</th></tr></thead><tbody>${jarang.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td class="text-center"><span class="badge badge-danger">${m.count}x</span></td></tr>`).join('')}</tbody></table></div></div>`:''}`
+            setTimeout(() => { const ctx = document.getElementById('chartDosen'); if (ctx) { if (window.c) window.c.destroy(); window.c = new Chart(ctx, { type:'doughnut', data:{ labels:['Izin','Sakit','Jaga Malam','Alpha'], datasets:[{ data:[statusCount.Izin,statusCount.Sakit,statusCount['Jaga Malam'],statusCount.Alpha], backgroundColor:['#f59e0b','#3b82f6','#8b5cf6','#ef4444'] }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } }) } }, 300)
+        }
+
+        // ==================== PENILAIAN ====================
+        async function dosenPenilaian() {
+            document.getElementById('judulHalaman').textContent = 'Penilaian Mahasiswa'
+            document.getElementById('breadcrumb').textContent = 'Dosen / Penilaian'
+
+            const { data: jadwal } = await db.from('jadwal').select('id, mata_kuliah(nama_mk), kelas(nama_kelas)').eq('dosen_id', currentUser.id).order('hari')
+
+            if (!jadwal || jadwal.length === 0) {
+                document.getElementById('contentArea').innerHTML = '<div class="card"><p style="text-align:center;padding:30px;">Belum ada jadwal</p></div>'
+                return
+            }
+
+            let html = '<p style="margin-bottom:16px;color:var(--text-light);">Kelola komponen penilaian per mata kuliah</p>'
+
+            for (const j of jadwal) {
+                const { data: komponen } = await db.from('komponen_nilai').select('*').eq('jadwal_id', j.id).order('created_at')
+
+                               html += '<div class="card"><h3><span>' + j.mata_kuliah.nama_mk + ' - Kelas ' + j.kelas.nama_kelas + '</span><div style="display:flex;gap:8px;"><button class="btn btn-outline btn-sm" onclick="rekapNilai(\'' + j.id + '\')">📊 Rekap Nilai</button><button class="btn btn-primary btn-sm" onclick="tambahKomponen(\'' + j.id + '\')">+ Komponen</button></div></h3>'
+
+                if (komponen && komponen.length > 0) {
+                    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'
+                    for (const k of komponen) {
+                        html += '<span style="background:#f0fdf4;padding:8px 14px;border-radius:20px;font-size:0.85em;display:flex;align-items:center;gap:8px;"><strong>' + k.nama_komponen + '</strong> (' + k.bobot + '%) <button class="btn btn-xs btn-danger" onclick="hapusKomponen(\'' + k.id + '\',\'' + j.id + '\')" style="padding:2px 6px;">x</button> <button class="btn btn-xs btn-primary" onclick="inputNilai(\'' + k.id + '\',\'' + k.nama_komponen.replace(/'/g, "\\'") + '\',\'' + j.id + '\')" style="padding:2px 8px;">Isi Nilai</button></span>'
+                    }
+                    html += '</div>'
+                } else {
+                    html += '<p style="color:#9ca3af;font-size:0.85em;">Belum ada komponen penilaian</p>'
+                }
+                html += '</div>'
+            }
+
+            document.getElementById('contentArea').innerHTML = html
+        }
+
+        async function tambahKomponen(jadwalId) {
+            openForm('Tambah Komponen Penilaian', [
+                { label: 'Nama Komponen', id: 'fnama', placeholder: 'Contoh: UTS, UAS, Tugas 1' },
+                { label: 'Bobot (%)', id: 'fbobot', type: 'number', value: '0' }
+            ], async () => {
+                const payload = {
+                    jadwal_id: jadwalId,
+                    nama_komponen: document.getElementById('fnama').value.trim(),
+                    bobot: parseInt(document.getElementById('fbobot').value) || 0
+                }
+                if (!payload.nama_komponen) { alert('Nama komponen wajib!'); return }
+                showSpinner()
+                await db.from('komponen_nilai').insert([payload])
+                tutupModal('modalForm')
+                loadPage('dosenPenilaian')
+            })
+        }
+        async function rekapNilai(jadwalId) {
+            showSpinner()
+            
+            // Ambil info jadwal
+            const { data: jadwal } = await db.from('jadwal')
+                .select('id, mata_kuliah(nama_mk), kelas(nama_kelas), max_pertemuan')
+                .eq('id', jadwalId)
+                .single()
+
+            // Ambil komponen nilai
+            const { data: komponen } = await db.from('komponen_nilai')
+                .select('*')
+                .eq('jadwal_id', jadwalId)
+                .order('created_at')
+
+            if (!komponen || komponen.length === 0) {
+                hideSpinner()
+                alert('Belum ada komponen penilaian!')
+                return
+            }
+
+            // Ambil mahasiswa
+            const { data: mahasiswa } = await db.from('mahasiswa')
+                .select('id, nim, nama')
+                .eq('kelas_id', jadwal.kelas_id)
+                .order('nama')
+
+            if (!mahasiswa || mahasiswa.length === 0) {
+                hideSpinner()
+                alert('Tidak ada mahasiswa di kelas ini!')
+                return
+            }
+
+            // Hitung nilai akhir per mahasiswa
+            let html = '<div style="max-height:500px;overflow-y:auto;"><table><thead><tr><th>NIM</th><th>Nama</th>'
+            
+            // Header kolom komponen
+            let totalBobot = 0
+            komponen.forEach(k => {
+                html += '<th class="text-center">' + k.nama_komponen + '<br><small>(' + k.bobot + '%)</small></th>'
+                totalBobot += k.bobot
+            })
+            html += '<th class="text-center">Nilai Akhir</th><th class="text-center">Grade</th></tr></thead><tbody>'
+
+            // Ambil semua nilai
+            const komponenIds = komponen.map(k => k.id)
+            const { data: semuaNilai } = await db.from('nilai_mahasiswa')
+                .select('*')
+                .in('komponen_id', komponenIds)
+
+            // Mapping nilai per mahasiswa per komponen
+            const nilaiMap = {}
+            semuaNilai?.forEach(n => {
+                if (!nilaiMap[n.mahasiswa_id]) nilaiMap[n.mahasiswa_id] = {}
+                nilaiMap[n.mahasiswa_id][n.komponen_id] = n.nilai
+            })
+
+            // Hitung per mahasiswa
+            mahasiswa.forEach(m => {
+                html += '<tr><td>' + m.nim + '</td><td>' + m.nama + '</td>'
+                
+                let nilaiAkhir = 0
+                komponen.forEach(k => {
+                    const nilai = nilaiMap[m.id]?.[k.id] || 0
+                    html += '<td class="text-center">' + (nilai || '-') + '</td>'
+                    if (totalBobot > 0) {
+                        nilaiAkhir += (nilai * k.bobot) / totalBobot
+                    }
+                })
+
+                nilaiAkhir = Math.round(nilaiAkhir * 100) / 100
+
+                // Grade
+                let grade = '-'
+                let gradeColor = ''
+                if (nilaiAkhir >= 85) { grade = 'A'; gradeColor = 'badge-success' }
+                else if (nilaiAkhir >= 75) { grade = 'B'; gradeColor = 'badge-info' }
+                else if (nilaiAkhir >= 65) { grade = 'C'; gradeColor = 'badge-warning' }
+                else if (nilaiAkhir >= 50) { grade = 'D'; gradeColor = 'badge-danger' }
+                else if (nilaiAkhir > 0) { grade = 'E'; gradeColor = 'badge-danger' }
+
+                html += '<td class="text-center"><strong>' + (nilaiAkhir || '-') + '</strong></td>'
+                html += '<td class="text-center"><span class="badge ' + gradeColor + '">' + grade + '</span></td>'
+                html += '</tr>'
+            })
+
+            html += '</tbody></table></div>'
+            html += '<p style="margin-top:12px;color:var(--text-light);font-size:0.8em;">Total Bobot: ' + totalBobot + '% | Rumus: (Nilai x Bobot) / ' + totalBobot + '</p>'
+            html += '<div class="modal-buttons" style="margin-top:16px;"><button class="btn btn-outline" onclick="tutupModal(\'modalForm\')">Tutup</button></div>'
+
+            document.getElementById('modalFormContent').innerHTML = '<h3>Rekap Nilai: ' + jadwal.mata_kuliah.nama_mk + ' - Kelas ' + jadwal.kelas.nama_kelas + '</h3>' + html
+            bukaModal('modalForm')
+            hideSpinner()
+        }
+        async function hapusKomponen(id, jadwalId) {
+            if (!confirm('Hapus komponen ini? Semua nilai terkait akan terhapus.')) return
+            showSpinner()
+            await db.from('komponen_nilai').delete().eq('id', id)
+            loadPage('dosenPenilaian')
+        }
+
+        async function inputNilai(komponenId, namaKomponen, jadwalId) {
+            showSpinner()
+            const { data: jadwal } = await db.from('jadwal').select('kelas_id').eq('id', jadwalId).single()
+            if (!jadwal) { hideSpinner(); alert('Jadwal tidak ditemukan!'); return }
+            
+            const { data: mahasiswa } = await db.from('mahasiswa').select('id, nim, nama').eq('kelas_id', jadwal.kelas_id).order('nama')
+
+            if (!mahasiswa || mahasiswa.length === 0) {
+                hideSpinner()
+                alert('Tidak ada mahasiswa di kelas ini!')
+                return
+            }
+
+            const { data: nilaiExist } = await db.from('nilai_mahasiswa').select('*').eq('komponen_id', komponenId)
+            const nilaiMap = {}
+            nilaiExist?.forEach(n => { nilaiMap[n.mahasiswa_id] = n.nilai })
+
+            let formHtml = '<h3>Input Nilai: ' + namaKomponen + '</h3><div style="max-height:400px;overflow-y:auto;"><table><thead><tr><th>NIM</th><th>Nama</th><th>Nilai</th></tr></thead><tbody>'
+            
+            mahasiswa.forEach(m => {
+                formHtml += '<tr><td>' + m.nim + '</td><td>' + m.nama + '</td><td><input type="number" id="nilai_' + m.id + '" value="' + (nilaiMap[m.id] || '') + '" placeholder="0-100" min="0" max="100" style="width:80px;padding:6px;border:2px solid #e5e7eb;border-radius:6px;text-align:center;"></td></tr>'
+            })
+
+            formHtml += '</tbody></table></div><div class="modal-buttons" style="margin-top:16px;"><button class="btn btn-outline" onclick="tutupModal(\'modalForm\')">Batal</button><button class="btn btn-primary" id="btnSimpanNilai">Simpan Semua</button></div>'
+
+            document.getElementById('modalFormContent').innerHTML = formHtml
+            document.getElementById('btnSimpanNilai').addEventListener('click', async () => {
+                showSpinner()
+                for (const m of mahasiswa) {
+                    const nilai = parseFloat(document.getElementById('nilai_' + m.id).value)
+                    if (!isNaN(nilai)) {
+                        await db.from('nilai_mahasiswa').upsert({ komponen_id: komponenId, mahasiswa_id: m.id, nilai: nilai }, { onConflict: 'komponen_id,mahasiswa_id' })
+                    }
+                }
+                tutupModal('modalForm')
+                loadPage('dosenPenilaian')
+            })
+
+            bukaModal('modalForm')
+            hideSpinner()
+        }
+
+                // ==================== SILABUS ====================
+                async function dosenSilabus() {
+            document.getElementById('judulHalaman').textContent = 'Silabus'
+            document.getElementById('breadcrumb').textContent = 'Dosen / Silabus'
+
+            const { data: jadwal } = await db.from('jadwal')
+                .select('id, max_pertemuan, mata_kuliah(nama_mk), kelas(nama_kelas)')
+                .eq('dosen_id', currentUser.id)
+                .order('hari')
+
+            if (!jadwal || jadwal.length === 0) {
+                document.getElementById('contentArea').innerHTML = '<div class="card"><p style="text-align:center;padding:30px;">Belum ada jadwal</p></div>'
+                return
+            }
+
+            let html = '<p style="margin-bottom:16px;color:var(--text-light);">Susun silabus per mata kuliah</p>'
+
+            for (const j of jadwal) {
+                // Cek apakah sudah ada silabus
+                const { data: silabus } = await db.from('silabus').select('*').eq('jadwal_id', j.id).single()
+
+                html += '<div class="card"><h3><span>' + j.mata_kuliah.nama_mk + ' - Kelas ' + j.kelas.nama_kelas + ' (' + (j.max_pertemuan || 16) + ' pertemuan)</span>'
+                
+                if (silabus) {
+                    html += '<button class="btn btn-warning btn-sm" onclick="editSilabus(\'' + silabus.id + '\',\'' + j.id + '\',\'' + (j.max_pertemuan || 16) + '\')">Edit Silabus</button>'
+                } else {
+                    html += '<button class="btn btn-primary btn-sm" onclick="buatSilabus(\'' + j.id + '\',\'' + (j.max_pertemuan || 16) + '\')">Buat Silabus</button>'
+                }
+                
+                html += '</h3>'
+
+                if (silabus) {
+                    html += '<p style="margin-bottom:8px;"><strong>Capaian Pembelajaran:</strong><br>' + (silabus.capaian || '-') + '</p>'
+                    html += '<p style="margin-bottom:8px;"><strong>Referensi:</strong><br>' + (silabus.referensi || '-') + '</p>'
+
+                    const { data: rencana } = await db.from('rencana_pertemuan').select('*').eq('silabus_id', silabus.id).order('pertemuan_ke')
+                    
+                    if (rencana && rencana.length > 0) {
+                        html += '<div class="table-wrap"><table><thead><tr><th>Pertemuan</th><th>Topik</th><th>Sub Topik</th></tr></thead><tbody>'
+                        rencana.forEach(r => {
+                            html += '<tr><td>' + r.pertemuan_ke + '</td><td>' + (r.topik || '-') + '</td><td>' + (r.sub_topik || '-') + '</td></tr>'
+                        })
+                        html += '</tbody></table></div>'
+                    }
+                }
+                html += '</div>'
+            }
+
+            document.getElementById('contentArea').innerHTML = html
+        }
+
+        async function buatSilabus(jadwalId, maxPertemuan) {
+            let formHtml = '<h3>Buat Silabus Baru</h3>'
+            formHtml += '<div class="form-group"><label>Capaian Pembelajaran</label><textarea id="fcapaian" rows="3" style="width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-family:inherit;"></textarea></div>'
+            formHtml += '<div class="form-group"><label>Referensi / Buku</label><textarea id="freferensi" rows="2" style="width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-family:inherit;"></textarea></div>'
+            formHtml += '<h4 style="margin-top:16px;">Rencana Pertemuan (' + maxPertemuan + ' pertemuan)</h4>'
+            formHtml += '<div style="max-height:350px;overflow-y:auto;">'
+            
+            for (let i = 1; i <= parseInt(maxPertemuan); i++) {
+                formHtml += '<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">'
+                formHtml += '<span style="min-width:30px;font-weight:600;">' + i + '</span>'
+                formHtml += '<input type="text" id="topik_' + i + '" placeholder="Topik" style="flex:1;padding:8px;border:2px solid #e5e7eb;border-radius:6px;">'
+                formHtml += '<input type="text" id="sub_' + i + '" placeholder="Sub Topik" style="flex:1;padding:8px;border:2px solid #e5e7eb;border-radius:6px;">'
+                formHtml += '</div>'
+            }
+            
+            formHtml += '</div>'
+            formHtml += '<div class="modal-buttons" style="margin-top:16px;"><button class="btn btn-outline" onclick="tutupModal(\'modalForm\')">Batal</button><button class="btn btn-primary" id="btnSimpanSilabus">Simpan</button></div>'
+
+            document.getElementById('modalFormContent').innerHTML = formHtml
+            
+            document.getElementById('btnSimpanSilabus').addEventListener('click', async () => {
+                showSpinner()
+                
+                // Simpan silabus
+                const { data: silabus } = await db.from('silabus').insert([{
+                    jadwal_id: jadwalId,
+                    capaian: document.getElementById('fcapaian').value.trim(),
+                    referensi: document.getElementById('freferensi').value.trim()
+                }]).select('id').single()
+
+                // Simpan rencana pertemuan
+                for (let i = 1; i <= parseInt(maxPertemuan); i++) {
+                    const topik = document.getElementById('topik_' + i).value.trim()
+                    const sub = document.getElementById('sub_' + i).value.trim()
+                    if (topik || sub) {
+                        await db.from('rencana_pertemuan').insert([{
+                            silabus_id: silabus.id,
+                            pertemuan_ke: i,
+                            topik: topik,
+                            sub_topik: sub
+                        }])
+                    }
+                }
+                
+                tutupModal('modalForm')
+                loadPage('dosenSilabus')
+            })
+
+            bukaModal('modalForm')
+        }
+
+        async function editSilabus(silabusId, jadwalId, maxPertemuan) {
+            showSpinner()
+            
+            const { data: silabus } = await db.from('silabus').select('*').eq('id', silabusId).single()
+            const { data: rencana } = await db.from('rencana_pertemuan').select('*').eq('silabus_id', silabusId).order('pertemuan_ke')
+            
+            const rencanaMap = {}
+            rencana?.forEach(r => { rencanaMap[r.pertemuan_ke] = r })
+
+            let formHtml = '<h3>Edit Silabus</h3>'
+            formHtml += '<div class="form-group"><label>Capaian Pembelajaran</label><textarea id="fcapaian" rows="3" style="width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-family:inherit;">' + (silabus.capaian || '') + '</textarea></div>'
+            formHtml += '<div class="form-group"><label>Referensi / Buku</label><textarea id="freferensi" rows="2" style="width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-family:inherit;">' + (silabus.referensi || '') + '</textarea></div>'
+            formHtml += '<h4 style="margin-top:16px;">Rencana Pertemuan</h4>'
+            formHtml += '<div style="max-height:350px;overflow-y:auto;">'
+            
+            for (let i = 1; i <= parseInt(maxPertemuan); i++) {
+                const r = rencanaMap[i] || {}
+                formHtml += '<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">'
+                formHtml += '<span style="min-width:30px;font-weight:600;">' + i + '</span>'
+                formHtml += '<input type="text" id="topik_' + i + '" value="' + (r.topik || '') + '" placeholder="Topik" style="flex:1;padding:8px;border:2px solid #e5e7eb;border-radius:6px;">'
+                formHtml += '<input type="text" id="sub_' + i + '" value="' + (r.sub_topik || '') + '" placeholder="Sub Topik" style="flex:1;padding:8px;border:2px solid #e5e7eb;border-radius:6px;">'
+                formHtml += '</div>'
+            }
+            
+            formHtml += '</div>'
+            formHtml += '<div class="modal-buttons" style="margin-top:16px;"><button class="btn btn-outline" onclick="tutupModal(\'modalForm\')">Batal</button><button class="btn btn-primary" id="btnUpdateSilabus">Update</button></div>'
+
+            document.getElementById('modalFormContent').innerHTML = formHtml
+            hideSpinner()
+            
+            document.getElementById('btnUpdateSilabus').addEventListener('click', async () => {
+                showSpinner()
+                
+                // Update silabus
+                await db.from('silabus').update({
+                    capaian: document.getElementById('fcapaian').value.trim(),
+                    referensi: document.getElementById('freferensi').value.trim()
+                }).eq('id', silabusId)
+
+                // Update rencana pertemuan
+                for (let i = 1; i <= parseInt(maxPertemuan); i++) {
+                    const topik = document.getElementById('topik_' + i).value.trim()
+                    const sub = document.getElementById('sub_' + i).value.trim()
+                    const existing = rencanaMap[i]
+                    
+                    if (existing) {
+                        await db.from('rencana_pertemuan').update({ topik, sub_topik: sub }).eq('id', existing.id)
+                    } else if (topik || sub) {
+                        await db.from('rencana_pertemuan').insert([{ silabus_id: silabusId, pertemuan_ke: i, topik, sub_topik: sub }])
+                    }
+                }
+                
+                tutupModal('modalForm')
+                loadPage('dosenSilabus')
+            })
+
+            bukaModal('modalForm')
+        }
+                // ==================== LAPORAN BULANAN ====================
+                async function dosenLaporan() {
+            document.getElementById('judulHalaman').textContent = 'Laporan Bulanan'
+            document.getElementById('breadcrumb').textContent = 'Dosen / Laporan'
+
+            const { data: jadwal } = await db.from('jadwal')
+                .select('id, mata_kuliah(nama_mk), kelas(nama_kelas)')
+                .eq('dosen_id', currentUser.id)
+                .order('hari')
+
+            if (!jadwal || jadwal.length === 0) {
+                document.getElementById('contentArea').innerHTML = '<div class="card"><p style="text-align:center;padding:30px;">Belum ada jadwal</p></div>'
+                return
+            }
+
+            const now = new Date()
+            const bulanIni = now.getMonth() + 1
+            const tahunIni = now.getFullYear()
+            const namaBulan = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+
+            let html = '<p style="margin-bottom:16px;color:var(--text-light);">Isi laporan pencapaian bulanan per mata kuliah</p>'
+
+            for (const j of jadwal) {
+                // Cek apakah sudah ada laporan bulan ini
+                const { data: laporan } = await db.from('laporan_bulanan')
+                    .select('*')
+                    .eq('dosen_id', currentUser.id)
+                    .eq('jadwal_id', j.id)
+                    .eq('bulan', bulanIni)
+                    .eq('tahun', tahunIni)
+                    .single()
+
+                html += '<div class="card">'
+                html += '<h3><span>' + j.mata_kuliah.nama_mk + ' - Kelas ' + j.kelas.nama_kelas + '</span>'
+                html += '<span style="font-weight:400;font-size:0.8em;color:#6b7280;">' + namaBulan[bulanIni] + ' ' + tahunIni + '</span></h3>'
+
+                if (laporan) {
+                    html += '<div style="background:#f0fdf4;padding:16px;border-radius:10px;margin-bottom:12px;">'
+                    html += '<p><strong>Jumlah Pertemuan:</strong> ' + laporan.jumlah_pertemuan + ' kali</p>'
+                    html += '<p><strong>Persentase Pencapaian:</strong> ' + laporan.persentase_pencapaian + '%</p>'
+                    html += '<p><strong>Materi Disampaikan:</strong><br>' + (laporan.materi_disampaikan || '-') + '</p>'
+                    html += '<p><strong>Kendala:</strong><br>' + (laporan.kendala || '-') + '</p>'
+                    html += '<p><strong>Rencana Perbaikan:</strong><br>' + (laporan.rencana_perbaikan || '-') + '</p>'
+                    html += '</div>'
+                    html += '<button class="btn btn-warning btn-sm" onclick="editLaporan(\'' + laporan.id + '\',\'' + j.id + '\')">Edit Laporan</button>'
+                } else {
+                    html += '<p style="color:#9ca3af;margin-bottom:12px;">Belum ada laporan bulan ini</p>'
+                    html += '<button class="btn btn-primary btn-sm" onclick="buatLaporan(\'' + j.id + '\')">Buat Laporan</button>'
+                }
+                
+                html += '</div>'
+            }
+
+            document.getElementById('contentArea').innerHTML = html
+        }
+
+        async function buatLaporan(jadwalId) {
+            openForm('Buat Laporan Bulanan', [
+                { label: 'Jumlah Pertemuan Bulan Ini', id: 'fjumlah', type: 'number', value: '0' },
+                { label: 'Persentase Pencapaian (%)', id: 'fpersen', type: 'number', value: '0' },
+                { label: 'Materi yang Disampaikan', id: 'fmateri', value: '', placeholder: 'Deskripsikan materi yang sudah diajarkan' },
+                { label: 'Kendala', id: 'fkendala', value: '', placeholder: 'Kendala selama mengajar bulan ini' },
+                { label: 'Rencana Perbaikan', id: 'frencana', value: '', placeholder: 'Rencana perbaikan bulan depan' }
+            ], async () => {
+                const now = new Date()
+                const payload = {
+                    dosen_id: currentUser.id,
+                    jadwal_id: jadwalId,
+                    bulan: now.getMonth() + 1,
+                    tahun: now.getFullYear(),
+                    jumlah_pertemuan: parseInt(document.getElementById('fjumlah').value) || 0,
+                    persentase_pencapaian: parseInt(document.getElementById('fpersen').value) || 0,
+                    materi_disampaikan: document.getElementById('fmateri').value.trim(),
+                    kendala: document.getElementById('fkendala').value.trim(),
+                    rencana_perbaikan: document.getElementById('frencana').value.trim()
+                }
+                showSpinner()
+                await db.from('laporan_bulanan').insert([payload])
+                tutupModal('modalForm')
+                loadPage('dosenLaporan')
+            })
+        }
+
+        async function editLaporan(laporanId, jadwalId) {
+            showSpinner()
+            const { data: laporan } = await db.from('laporan_bulanan').select('*').eq('id', laporanId).single()
+            hideSpinner()
+
+            openForm('Edit Laporan Bulanan', [
+                { label: 'Jumlah Pertemuan', id: 'fjumlah', type: 'number', value: String(laporan.jumlah_pertemuan || 0) },
+                { label: 'Persentase Pencapaian (%)', id: 'fpersen', type: 'number', value: String(laporan.persentase_pencapaian || 0) },
+                { label: 'Materi Disampaikan', id: 'fmateri', value: laporan.materi_disampaikan || '' },
+                { label: 'Kendala', id: 'fkendala', value: laporan.kendala || '' },
+                { label: 'Rencana Perbaikan', id: 'frencana', value: laporan.rencana_perbaikan || '' }
+            ], async () => {
+                const payload = {
+                    jumlah_pertemuan: parseInt(document.getElementById('fjumlah').value) || 0,
+                    persentase_pencapaian: parseInt(document.getElementById('fpersen').value) || 0,
+                    materi_disampaikan: document.getElementById('fmateri').value.trim(),
+                    kendala: document.getElementById('fkendala').value.trim(),
+                    rencana_perbaikan: document.getElementById('frencana').value.trim()
+                }
+                showSpinner()
+                await db.from('laporan_bulanan').update(payload).eq('id', laporanId)
+                tutupModal('modalForm')
+                loadPage('dosenLaporan')
+            })
+        }
+
+        // ==================== ADMIN LAPORAN ====================
+        async function adminLaporan() {
+            document.getElementById('judulHalaman').textContent = 'Laporan Dosen'
+            document.getElementById('breadcrumb').textContent = 'Admin / Laporan'
+
+            const now = new Date()
+            const bulanIni = now.getMonth() + 1
+            const tahunIni = now.getFullYear()
+            const namaBulan = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+
+            const { data: laporan } = await db.from('laporan_bulanan')
+                .select('*, dosen(nama, gelar), jadwal(mata_kuliah(nama_mk), kelas(nama_kelas))')
+                .eq('bulan', bulanIni)
+                .eq('tahun', tahunIni)
+                .order('created_at', { ascending: false })
+
+            let html = '<div class="card"><h3>Laporan Bulan ' + namaBulan[bulanIni] + ' ' + tahunIni + ' (' + (laporan?.length || 0) + ' laporan)</h3>'
+
+            if (!laporan || laporan.length === 0) {
+                html += '<p style="text-align:center;padding:20px;color:#9ca3af;">Belum ada laporan bulan ini</p>'
+            } else {
+                html += '<div class="table-wrap"><table><thead><tr><th>Dosen</th><th>Matkul</th><th>Kelas</th><th>Pertemuan</th><th>Pencapaian</th><th>Kendala</th></tr></thead><tbody>'
+                
+                laporan.forEach(l => {
+                    html += '<tr>'
+                    html += '<td>' + (l.dosen?.gelar || '') + ' ' + (l.dosen?.nama || '-') + '</td>'
+                    html += '<td>' + (l.jadwal?.mata_kuliah?.nama_mk || '-') + '</td>'
+                    html += '<td>' + (l.jadwal?.kelas?.nama_kelas || '-') + '</td>'
+                    html += '<td class="text-center">' + l.jumlah_pertemuan + 'x</td>'
+                    html += '<td class="text-center"><span class="badge ' + (l.persentase_pencapaian >= 75 ? 'badge-success' : l.persentase_pencapaian >= 50 ? 'badge-warning' : 'badge-danger') + '">' + l.persentase_pencapaian + '%</span></td>'
+                    html += '<td>' + (l.kendala || '-') + '</td>'
+                    html += '</tr>'
+                })
+
+                html += '</tbody></table></div>'
+            }
+
+            html += '</div>'
+            document.getElementById('contentArea').innerHTML = html
+        }
+
+        // ==================== JADWAL ====================
+        async function dosenJadwal() {
+            document.getElementById('judulHalaman').textContent = 'Jadwal Saya'; document.getElementById('breadcrumb').textContent = 'Dosen / Jadwal'
+            const { data } = await db.from('jadwal').select('*, mata_kuliah(nama_mk), kelas(nama_kelas)').eq('dosen_id', currentUser.id).order('hari')
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3>Semua Jadwal</h3><div style="display:flex;flex-wrap:wrap;gap:14px;">${data?.map(j => `<div style="background:#f9fafb;padding:16px;border-radius:10px;border-left:4px solid var(--green);min-width:240px;"><strong>${j.mata_kuliah?.nama_mk}</strong><p style="color:#6b7280;font-size:0.83em;">${j.hari} | ${j.jam_mulai?.substring(0,5)}-${j.jam_selesai?.substring(0,5)}</p><p style="color:#6b7280;font-size:0.83em;">Kelas ${j.kelas?.nama_kelas} | Max: ${j.max_pertemuan||16}</p></div>`).join('')||'<p>Belum ada</p>'}</div></div>`
+        }
+
+        // ==================== REKAP ====================
+        async function dosenRekap() {
+            document.getElementById('judulHalaman').textContent = 'Rekap Kehadiran'
+            document.getElementById('breadcrumb').textContent = 'Dosen / Rekap'
+            const { data: jadwal } = await db.from('jadwal')
+                .select('id, min_kehadiran, max_pertemuan, mata_kuliah(nama_mk), kelas(nama_kelas)')
+                .eq('dosen_id', currentUser.id)
+                .order('hari')
+
+            if (!jadwal || jadwal.length === 0) {
+                document.getElementById('contentArea').innerHTML = '<div class="card"><p style="text-align:center;padding:30px;color:#9ca3af;">Belum ada jadwal</p></div>'
+                return
+            }
+
+            const groups = {}
+            jadwal.forEach(j => {
+                const key = j.mata_kuliah.nama_mk
+                if (!groups[key]) groups[key] = { matkul: key, ids: [], min: j.min_kehadiran || 75, max: j.max_pertemuan || 16 }
+                groups[key].ids.push(j.id)
+            })
+
+            let html = '<p style="margin-bottom:16px;color:var(--text-light);font-size:0.85em;">Rekap kehadiran per mata kuliah yang diampu</p>'
+
+            for (const key in groups) {
+                const g = groups[key]
+                
+                const { data: absensi } = await db.from('absensi')
+                    .select('mahasiswa_id, status, mahasiswa(nim, nama)')
+                    .in('jadwal_id', g.ids)
+
+                const rekap = {}
+                absensi?.forEach(a => {
+                    const mid = a.mahasiswa_id
+                    if (!rekap[mid]) rekap[mid] = { 
+                        nim: a.mahasiswa?.nim || '-', 
+                        nama: a.mahasiswa?.nama || '-', 
+                        Hadir: g.max, Izin: 0, Sakit: 0, 'Jaga Malam': 0, Alpha: 0 
+                    }
+                    if (rekap[mid][a.status] !== undefined) { 
+                        rekap[mid][a.status]++
+                        rekap[mid].Hadir-- 
+                    }
+                })
+
+                const rows = Object.values(rekap)
+                if (rows.length === 0) {
+                    html += '<div class="card"><h3>' + g.matkul + '</h3><p style="text-align:center;color:#9ca3af;padding:20px;">Belum ada data absensi</p></div>'
+                    continue
+                }
+
+                const totalHadir = rows.reduce((s, r) => s + r.Hadir, 0)
+                const totalTidakHadir = rows.reduce((s, r) => s + r.Izin + r.Sakit + r['Jaga Malam'] + r.Alpha, 0)
+
+                html += '<div class="card"><h3><span>' + g.matkul + '</span><span style="font-weight:400;font-size:0.7em;color:#6b7280;">' + rows.length + ' mahasiswa | Max ' + g.max + ' pertemuan | Min ' + g.min + '%</span></h3>'
+                html += '<div style="margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap;"><span style="font-size:0.8em;">Hadir: <strong>' + totalHadir + '</strong></span><span style="font-size:0.8em;">Tidak Hadir: <strong>' + totalTidakHadir + '</strong></span></div>'
+                html += '<div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th class="text-center">Hadir</th><th class="text-center">Izin</th><th class="text-center">Sakit</th><th class="text-center">Jaga Malam</th><th class="text-center">Alpha</th><th class="text-center">Total Tidak Hadir</th><th class="text-center">%</th></tr></thead><tbody>'
+
+                rows.forEach(r => {
+                    const th = r.Izin + r.Sakit + r['Jaga Malam'] + r.Alpha
+                    const p = ((r.Hadir / g.max) * 100).toFixed(1)
+                    const lulus = p >= g.min
+                    html += '<tr><td>' + r.nim + '</td><td>' + r.nama + '</td><td class="text-center"><span class="badge badge-success">' + r.Hadir + '</span></td><td class="text-center">' + (r.Izin || '-') + '</td><td class="text-center">' + (r.Sakit || '-') + '</td><td class="text-center">' + (r['Jaga Malam'] || '-') + '</td><td class="text-center">' + (r.Alpha || '-') + '</td><td class="text-center ' + (th > 3 ? 'text-danger' : '') + '">' + th + '</td><td class="text-center ' + (lulus ? 'text-success' : 'text-danger') + '">' + p + '%</td></tr>'
+                })
+
+                html += '</tbody></table></div></div>'
+            }
+
+            document.getElementById('contentArea').innerHTML = html
+        }
+        function bukaAbsensi(jadwalId) { 
+            localStorage.setItem('jadwalAktif', jadwalId)
+            window.location.href = 'absensi.html' 
+        }
+
+        // ==================== LOGOUT ====================
+        function konfirmasiLogout() { tutupModal('modalLogout'); logout() }
+        function logout() { localStorage.removeItem('user'); localStorage.removeItem('jadwalAktif'); document.getElementById('halamanUtama').style.display = 'none'; document.getElementById('halamanLogin').style.display = 'flex'; document.getElementById('formLogin').reset(); document.getElementById('pesanError').style.display = 'none'; document.querySelector('.role-btn[data-role="dosen"]').click(); currentUser = null }
+
+        const savedUser = localStorage.getItem('user')
+        if (savedUser) { currentUser = JSON.parse(savedUser); currentRole = currentUser.role; tampilkanUtama() }
+    </script>
+</body>
+</html>

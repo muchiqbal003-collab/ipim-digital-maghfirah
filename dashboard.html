@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Dosen - Absensi Digital</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="header">
+            <div class="header-left">
+                <img src="images/logo.png" alt="Logo" class="logo-small">
+                <h1>Absensi Digital</h1>
+            </div>
+            <div class="header-right">
+                <span id="namaDosen">👤 Nama Dosen</span>
+                <button id="btnLogout" class="btn-logout">🚪 Logout</button>
+            </div>
+        </header>
+
+        <div class="info-card">
+            <h2>Selamat Datang, <span id="namaDosenBig"></span></h2>
+            <p id="gelarDosen"></p>
+        </div>
+
+        <div class="jadwal-section">
+            <h3>📅 Jadwal Mengajar Hari Ini</h3>
+            <div id="jadwalList">
+                <p style="text-align: center; padding: 30px; color: #999;">
+                    ⏳ Memuat jadwal...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
