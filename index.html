@@ -628,43 +628,48 @@ if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanE
             document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mahasiswa (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formMahasiswa()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('mahasiswa')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('mahasiswa')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td>${m.kelas?.nama_kelas||m.kelas_id||'-'}</td><td>${actionButtons(`formMahasiswa('${m.id}')`,`confirmDelete('${m.id}','Hapus ${m.nama}?',deleteMahasiswa)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
         }
 
-                                async function formMahasiswa(id = null) {
+                                        async function formMahasiswa(id = null) {
             let m = { nim:'', nama:'', kelas_id:'' }
             if (id) { 
                 const { data } = await db.from('mahasiswa').select('*').eq('id', id).single()
                 if (data) m = data 
             }
             
-            // Ambil SEMUA data kelas
-            const { data: kelas, error: errKelas } = await db.from('kelas').select('*').order('nama_kelas')
-            console.log('Data kelas:', kelas) // Debug
+            // Ambil data kelas - PASTIKAN PAKAI await
+            const kelasRes = await db.from('kelas').select('*').order('nama_kelas')
+            const kelas = kelasRes.data
             
             const kelasOptions = []
             if (kelas && kelas.length > 0) {
                 kelas.forEach(k => {
-                    kelasOptions.push({ v: k.id, t: k.nama_kelas, s: k.id === m.kelas_id })
+                    kelasOptions.push({ 
+                        v: k.id, 
+                        t: k.nama_kelas, 
+                        s: k.id === m.kelas_id 
+                    })
                 })
             }
             
-            // Kalau tidak ada kelas, kasih opsi kosong
-            if (kelasOptions.length === 0) {
-                kelasOptions.push({ v: '', t: 'Tidak ada kelas tersedia', s: true })
-            }
-            
             openForm(id ? 'Edit Mahasiswa' : 'Tambah Mahasiswa', [
-                { label: 'NIM', id: 'fnim', value: m.nim }, 
-                { label: 'Nama', id: 'fnama', value: m.nama },
+                { label: 'NIM', id: 'fnim', value: m.nim || '' }, 
+                { label: 'Nama', id: 'fnama', value: m.nama || '' },
                 { label: 'Kelas', id: 'fkelas', type: 'select', options: kelasOptions }
             ], async () => {
-                const payload = { 
-                    nim: document.getElementById('fnim').value.trim(), 
-                    nama: document.getElementById('fnama').value.trim(), 
-                    kelas_id: document.getElementById('fkelas').value || null 
-                }
-                if (!payload.nim || !payload.nama) { alert('NIM dan Nama wajib!'); return }
+                const nim = document.getElementById('fnim').value.trim()
+                const nama = document.getElementById('fnama').value.trim()
+                const kelas_id = document.getElementById('fkelas').value
+                
+                if (!nim || !nama) { alert('NIM dan Nama wajib!'); return }
+                
                 showSpinner()
-                if (id) await db.from('mahasiswa').update(payload).eq('id', id)
-                else await db.from('mahasiswa').insert([payload])
+                const payload = { nim, nama, kelas_id: kelas_id || null }
+                
+                if (id) {
+                    await db.from('mahasiswa').update(payload).eq('id', id)
+                } else {
+                    await db.from('mahasiswa').insert([payload])
+                }
+                
                 tutupModal('modalForm')
                 loadPage('adminMahasiswa')
             })
