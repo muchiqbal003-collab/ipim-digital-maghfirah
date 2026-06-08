@@ -1,0 +1,24 @@
+{
+  "name": "IPIM - Absensi Digital",
+  "short_name": "IPIM Absensi",
+  "start_url": "/ipim-digital-maghfirah/index.html",
+  "scope": "/ipim-digital-maghfirah/",
+  "display": "standalone",
+  "background_color": "#0d7c3b",
+  "theme_color": "#0d7c3b",
+  "description": "Sistem Absensi Digital IPIM",
+  "icons": [
+    {
+      "src": "/ipim-digital-maghfirah/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ipim-digital-maghfirah/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
