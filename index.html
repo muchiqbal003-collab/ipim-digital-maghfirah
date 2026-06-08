@@ -624,18 +624,18 @@ if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanE
         // ==================== ADMIN: CRUD MAHASISWA ====================
         async function adminMahasiswa() {
             document.getElementById('judulHalaman').textContent = 'Data Mahasiswa'; document.getElementById('breadcrumb').textContent = 'Admin / Mahasiswa'
-            const { data } = await db.from('mahasiswa').select('*').order('nama')
+            const { data } = await db.from('mahasiswa').select('*, kelas(nama_kelas)').order('nama')
             document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mahasiswa (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formMahasiswa()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('mahasiswa')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('mahasiswa')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td>${m.kelas?.nama_kelas||m.kelas_id||'-'}</td><td>${actionButtons(`formMahasiswa('${m.id}')`,`confirmDelete('${m.id}','Hapus ${m.nama}?',deleteMahasiswa)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
         }
 
-                async function formMahasiswa(id = null) {
-            let m = { nim:'', nama:'', kelas_id:'' }; 
+                        async function formMahasiswa(id = null) {
+            let m = { nim:'', nama:'', kelas_id:'' }
             if (id) { 
-                const { data } = await db.from('mahasiswa').select('*').eq('id', id).single(); 
+                const { data } = await db.from('mahasiswa').select('*').eq('id', id).single()
                 if (data) m = data 
             }
             
-            // Ambil daftar kelas
+            // Ambil data kelas dari database
             const { data: kelas } = await db.from('kelas').select('*').order('nama_kelas')
             const kelasOptions = [{ v: '', t: '-- Pilih Kelas --', s: !m.kelas_id }]
             if (kelas) {
