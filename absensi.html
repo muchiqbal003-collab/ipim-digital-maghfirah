@@ -2,442 +2,731 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Mahasiswa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>IPIM Absensi | Digital Attendance</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef2f5 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 24px 20px;
         }
 
+        /* Container Premium */
         .container {
-            max-width: 900px;
+            max-width: 1280px;
             margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header-section {
+            margin-bottom: 32px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2d6a4f, #1b5e3f);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(45, 106, 79, 0.25);
+        }
+
+        .logo-icon i {
+            font-size: 26px;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2d6a4f, #1b5e3f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.3px;
+        }
+
+        .logo-text p {
+            font-size: 0.8rem;
+            color: #6c7a89;
+            margin-top: 2px;
+        }
+
+        .btn-back {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .btn-back:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateX(-2px);
+        }
+
+        /* Info Card Modern */
+        .info-card-modern {
+            background: white;
+            border-radius: 28px;
+            padding: 0;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.08);
+            margin-bottom: 28px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b5e3f 100%);
+            padding: 20px 28px;
+            color: white;
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .card-header p {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .card-body {
+            padding: 24px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: white;
+        }
+
+        .info-detail {
+            flex: 1;
+        }
+
+        .info-detail .matkul {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .info-detail .detail-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .info-detail .detail-meta i {
+            width: 20px;
+            color: #2d6a4f;
+        }
+
+        .pertemuan-badge {
+            background: linear-gradient(135deg, #f97316, #f59e0b);
+            border-radius: 24px;
+            padding: 12px 24px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.25);
+        }
+
+        .pertemuan-badge .angka {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+        }
+
+        .pertemuan-badge .label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.9);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Alert Info */
+        .alert-modern {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 14px 20px;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: #b45309;
+        }
+
+        /* Materi Input */
+        .materi-section {
             background: white;
             border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
         }
 
-        .header {
+        .materi-label {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e0e0e0;
+            gap: 8px;
         }
 
-        .header h1 { color: #1a3c4a; font-size: 1.5em; }
-
-        .btn-kembali {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.9em;
+        .materi-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: #fafcff;
         }
 
-        .btn-kembali:hover { background: #5a6268; }
-
-        .info-card {
-            background: #f0f7fa;
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            border-left: 5px solid #1a3c4a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .materi-input:focus {
+            outline: none;
+            border-color: #2d6a4f;
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
         }
 
-        .info-card h3 { color: #1a3c4a; margin-bottom: 3px; }
-        .info-card p { color: #666; font-size: 0.9em; }
-
-        .pertemuan-info {
-            text-align: right;
-            background: #1a3c4a;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 10px;
+        /* Tabel Premium */
+        .table-wrapper {
+            background: white;
+            border-radius: 24px;
+            overflow-x: auto;
+            box-shadow: 0 8px 25px -10px rgba(0,0,0,0.05);
+            border: 1px solid #edf2f7;
+            margin-bottom: 28px;
         }
 
-        .pertemuan-info .ke { font-size: 1.8em; font-weight: bold; line-height: 1; }
-        .pertemuan-info .label { font-size: 0.75em; opacity: 0.8; }
-
-        .alert-info {
-            background: #fff3e0;
-            border: 1px solid #ffe0b2;
-            color: #e65100;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.9em;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
         }
 
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        thead { background: #1a3c4a; color: white; }
-        th { padding: 12px 15px; text-align: left; font-size: 0.9em; }
-        td { padding: 10px 15px; border-bottom: 1px solid #e0e0e0; }
-        tr:hover { background: #f8f9fa; }
+        thead {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
 
+        th {
+            padding: 16px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
+        tr:hover td {
+            background-color: #fefce8;
+        }
+
+        /* Status Badges */
         .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.8em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
-        .badge-hadir { background: #d4edda; color: #155724; }
-        .badge-izin { background: #fff3cd; color: #856404; }
-        .badge-sakit { background: #cce5ff; color: #004085; }
-        .badge-jaga { background: #e8daef; color: #6c3483; }
-        .badge-alpha { background: #f8d7da; color: #721c24; }
+        .badge-hadir { background: #e8f5e9; color: #2e7d32; }
+        .badge-hadir::before { content: "✅"; font-size: 0.7rem; }
 
-        .btn-tidak-hadir {
-            background: #dc3545;
-            color: white;
+        .badge-izin { background: #fff3e0; color: #f57c00; }
+        .badge-izin::before { content: "📝"; }
+
+        .badge-sakit { background: #e3f2fd; color: #1565c0; }
+        .badge-sakit::before { content: "🏥"; }
+
+        .badge-jaga { background: #f3e5f5; color: #7b1fa2; }
+        .badge-jaga::before { content: "🌙"; }
+
+        .badge-alpha { background: #ffebee; color: #c62828; }
+        .badge-alpha::before { content: "❌"; }
+
+        /* Tombol Aksi */
+        .action-btn {
+            background: none;
             border: none;
             padding: 6px 12px;
-            border-radius: 5px;
+            border-radius: 30px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 500;
             cursor: pointer;
-            font-size: 0.8em;
-            font-family: inherit;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .btn-tidak-hadir:hover { background: #c82333; }
+        .btn-danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fee2e2;
+        }
 
-        .btn-submit {
+        .btn-danger:hover {
+            background: #fee2e2;
+            transform: scale(0.98);
+        }
+
+        .btn-warning {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #dbeafe;
+        }
+
+        .btn-warning:hover {
+            background: #dbeafe;
+        }
+
+        /* Tombol Submit */
+        .btn-submit-modern {
             width: 100%;
-            padding: 14px;
-            background: #1a3c4a;
+            padding: 16px;
+            background: linear-gradient(135deg, #2d6a4f, #1b5e3f);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 60px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            font-family: inherit;
-            margin-top: 15px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px -8px rgba(45, 106, 79, 0.4);
         }
 
-        .btn-submit:hover { background: #0d2a35; }
-        .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-submit-modern:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 30px -10px rgba(45, 106, 79, 0.5);
+        }
 
-        .modal {
+        .btn-submit-modern:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Modal Premium */
+        .modal-premium {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 999;
+            backdrop-filter: blur(4px);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
         }
 
-        .modal-content {
+        .modal-content-premium {
             background: white;
-            padding: 25px;
-            border-radius: 15px;
-            width: 350px;
+            padding: 32px;
+            border-radius: 32px;
+            width: 380px;
             text-align: center;
+            animation: modalPop 0.2s ease;
+            box-shadow: 0 40px 60px -20px rgba(0,0,0,0.3);
         }
 
-        .modal-content h3 { margin-bottom: 15px; color: #1a3c4a; }
-
-        .modal-content select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            font-family: inherit;
-            margin-bottom: 15px;
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
-        .modal-content button {
+        .modal-content-premium h3 {
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 1.4rem;
+        }
+
+        .modal-content-premium select {
             width: 100%;
-            padding: 10px;
-            margin: 5px 0;
+            padding: 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            margin: 20px 0;
+            background: #f8fafc;
+        }
+
+        .btn-simpan {
+            background: #2d6a4f;
+            color: white;
+            width: 100%;
+            padding: 12px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: inherit;
+            border-radius: 40px;
             font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
         }
 
-        .btn-simpan-status { background: #1a3c4a; color: white; }
-        .btn-batal { background: #ddd; color: #333; }
+        .btn-batal-modal {
+            background: #f1f5f9;
+            color: #475569;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+        }
 
-        .pesan-sukses {
-            display: none;
+        /* Pesan Sukses */
+        .success-message {
+            background: #e8f5e9;
+            border-radius: 24px;
+            padding: 24px;
             text-align: center;
-            padding: 20px;
-            color: #155724;
-            background: #d4edda;
-            border-radius: 10px;
             margin-top: 20px;
+            display: none;
+            border: 1px solid #c8e6c9;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .card-body { flex-direction: column; text-align: center; }
+            .detail-meta { justify-content: center; }
+            th, td { font-size: 0.75rem; padding: 10px 8px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>📋 Absensi Mahasiswa</h1>
-            <button class="btn-kembali" onclick="window.location.href='index.html'">⬅️ Kembali</button>
-        </div>
 
-        <!-- Info -->
-        <div class="info-card">
-            <div>
-                <h3 id="namaMatkul">📚 Memuat...</h3>
-                <p id="infoJadwal">⏰ Memuat...</p>
+<div class="container">
+    <!-- Header -->
+    <div class="header-section">
+        <div class="header-top">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>IPIM Academy</h1>
+                    <p>Digital Attendance System</p>
+                </div>
             </div>
-            <div class="pertemuan-info">
-                <div class="ke" id="pertemuanKe">-</div>
-                <div class="label">Pertemuan ke</div>
+            <button class="btn-back" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Info Card Premium -->
+    <div class="info-card-modern">
+        <div class="card-header">
+            <h2><i class="fas fa-calendar-alt"></i> Sesi Aktif</h2>
+            <p><i class="fas fa-clock"></i> Hanya klik mahasiswa yang tidak hadir</p>
+        </div>
+        <div class="card-body">
+            <div class="info-detail">
+                <div class="matkul" id="namaMatkul">📚 Memuat...</div>
+                <div class="detail-meta">
+                    <span><i class="fas fa-building"></i> Kelas: <span id="namaKelas">-</span></span>
+                    <span><i class="fas fa-clock"></i> Jam: <span id="jamMulai">-</span> - <span id="jamSelesai">-</span></span>
+                    <span><i class="fas fa-location-dot"></i> Ruang: <span id="ruangan">-</span></span>
+                </div>
+            </div>
+            <div class="pertemuan-badge">
+                <div class="angka" id="pertemuanKe">-</div>
+                <div class="label">Pertemuan Ke</div>
             </div>
         </div>
+    </div>
 
-        <!-- Alert -->
-        <div class="alert-info">
-            💡 <strong>Default semua HADIR.</strong> Klik hanya untuk mahasiswa yang <strong>TIDAK HADIR</strong>.
+    <!-- Alert -->
+    <div class="alert-modern">
+        <i class="fas fa-lightbulb" style="font-size: 1.2rem;"></i>
+        <span><strong>Default semua mahasiswa HADIR.</strong> Klik tombol "Tidak Hadir" hanya untuk mahasiswa yang berhalangan.</span>
+    </div>
+
+    <!-- Materi -->
+    <div class="materi-section">
+        <div class="materi-label">
+            <i class="fas fa-book-open" style="color: #f59e0b;"></i> 
+            Materi Pertemuan Hari Ini
         </div>
+        <input type="text" id="materi" class="materi-input" placeholder="Contoh: Bab 3 - Implementasi Tauhid dalam Kehidupan Sehari-hari">
+    </div>
 
-        <!-- Input Materi -->
-        <div style="margin-bottom: 20px;">
-            <label style="font-weight: 600; display: block; margin-bottom: 5px;">📖 Materi Hari Ini:</label>
-            <input type="text" id="materi" placeholder="Contoh: Bab 3 - Tauhid" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; font-family: inherit;">
-        </div>
-
-        <!-- Tabel -->
-        <table id="tabelAbsensi">
+    <!-- Tabel Mahasiswa -->
+    <div class="table-wrapper">
+        <table>
             <thead>
                 <tr>
                     <th>No</th>
                     <th>NIM</th>
-                    <th>Nama</th>
+                    <th>Nama Mahasiswa</th>
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody id="dataMahasiswa">
-                <tr><td colspan="5" style="text-align: center; padding: 30px;">⏳ Memuat...</td></tr>
+                <tr><td colspan="5" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-pulse"></i> Memuat data...</td></tr>
             </tbody>
         </table>
-
-        <!-- Tombol -->
-        <button class="btn-submit" id="btnSimpan" onclick="simpanAbsensi()">💾 Simpan Absensi</button>
-        <div class="pesan-sukses" id="pesanSukses">✅ Absensi berhasil disimpan!</div>
     </div>
 
-    <!-- Modal pilih status -->
-    <div class="modal" id="modalStatus">
-        <div class="modal-content">
-            <h3>Pilih Status Ketidakhadiran</h3>
-            <p id="modalNamaMhs" style="margin-bottom: 10px; font-weight: 600;"></p>
-            <select id="selectStatus">
-                <option value="Izin">📝 Izin</option>
-                <option value="Sakit">🏥 Sakit</option>
-                <option value="Jaga Malam">🌙 Jaga Malam</option>
-                <option value="Alpha">❌ Alpha</option>
-            </select>
-            <button class="btn-simpan-status" onclick="konfirmasiStatus()">✅ Simpan</button>
-            <button class="btn-batal" onclick="tutupModal()">Batal</button>
-        </div>
+    <!-- Tombol Simpan -->
+    <button class="btn-submit-modern" id="btnSimpan" onclick="simpanAbsensi()">
+        <i class="fas fa-save"></i> Simpan Absensi
+    </button>
+    <div class="success-message" id="pesanSukses">
+        <i class="fas fa-check-circle" style="font-size: 2rem; color: #2d6a4f; margin-bottom: 10px; display: block;"></i>
+        <strong id="suksesText">Absensi berhasil disimpan!</strong>
+        <p style="margin-top: 8px; font-size: 0.8rem;">Mengalihkan ke dashboard...</p>
     </div>
+</div>
 
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Modal Premium -->
+<div class="modal-premium" id="modalStatus">
+    <div class="modal-content-premium">
+        <i class="fas fa-user-graduate" style="font-size: 2rem; color: #f59e0b; margin-bottom: 8px; display: block;"></i>
+        <h3>Konfirmasi Ketidakhadiran</h3>
+        <p id="modalNamaMhs" style="font-weight: 500; margin: 8px 0 0 0; color: #334155;">Mahasiswa</p>
+        <select id="selectStatus">
+            <option value="Izin">📝 Izin</option>
+            <option value="Sakit">🏥 Sakit</option>
+            <option value="Jaga Malam">🌙 Jaga Malam</option>
+            <option value="Alpha">❌ Alpha</option>
+        </select>
+        <button class="btn-simpan" onclick="konfirmasiStatus()">Simpan Status</button>
+        <button class="btn-batal-modal" onclick="tutupModal()">Batal</button>
+    </div>
+</div>
 
-    <script>
-        const SUPABASE_URL = 'https://mvhrnrvdhibdtvulmqkr.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12aHJucnZkaGliZHR2dWxtcWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MTc5MjksImV4cCI6MjA5NDQ5MzkyOX0.IsS1wSXtGb0Keroc3UvsiVT38u-gea0_IVdAm1snBVw'
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // Supabase Config
+    const SUPABASE_URL = 'https://mvhrnrvdhibdtvulmqkr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12aHJucnZkaGliZHR2dWxtcWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MTc5MjksImV4cCI6MjA5NDQ5MzkyOX0.IsS1wSXtGb0Keroc3UvsiVT38u-gea0_IVdAm1snBVw';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    const jadwalId = localStorage.getItem('jadwalAktif');
+    let dataJadwal = null;
+    let dataMahasiswa = [];
+    let mahasiswaTidakHadir = {};
+    let mhsDipilih = null;
+    let pertemuanKe = 1;
 
-        const jadwalId = localStorage.getItem('jadwalAktif')
-        let dataJadwal = null
-        let dataMahasiswa = []
-        let mahasiswaTidakHadir = {} // {mahasiswa_id: status}
-        let mhsDipilih = null
-        let pertemuanKe = 1
+    async function loadData() {
+        if (!jadwalId) { window.location.href = 'index.html'; return; }
 
-        // ========================================
-        // LOAD DATA
-        // ========================================
-        async function loadData() {
-            if (!jadwalId) { window.location.href = 'index.html'; return; }
+        const { data: jadwal } = await db
+            .from('jadwal')
+            .select('id, jam_mulai, jam_selesai, ruangan, mata_kuliah(nama_mk), kelas(id, nama_kelas)')
+            .eq('id', jadwalId)
+            .single();
 
-            // Ambil jadwal
-            const { data: jadwal } = await db
-                .from('jadwal')
-                .select('id, jam_mulai, jam_selesai, ruangan, mata_kuliah(nama_mk), kelas(id, nama_kelas)')
-                .eq('id', jadwalId)
-                .single()
+        if (!jadwal) { alert('Jadwal tidak ditemukan!'); window.location.href = 'index.html'; return; }
+        dataJadwal = jadwal;
 
-            if (!jadwal) { alert('Jadwal tidak ditemukan!'); window.location.href = 'index.html'; return; }
-            dataJadwal = jadwal
+        document.getElementById('namaMatkul').innerHTML = `<i class="fas fa-graduation-cap"></i> ${jadwal.mata_kuliah.nama_mk}`;
+        document.getElementById('namaKelas').textContent = jadwal.kelas.nama_kelas;
+        document.getElementById('jamMulai').textContent = jadwal.jam_mulai.substring(0,5);
+        document.getElementById('jamSelesai').textContent = jadwal.jam_selesai.substring(0,5);
+        document.getElementById('ruangan').textContent = jadwal.ruangan || 'Belum ditentukan';
 
-            document.getElementById('namaMatkul').textContent = '📚 ' + jadwal.mata_kuliah.nama_mk
-            document.getElementById('infoJadwal').textContent = 
-                '🏫 Kelas: ' + jadwal.kelas.nama_kelas + 
-                ' | ⏰ ' + jadwal.jam_mulai.substring(0,5) + ' - ' + jadwal.jam_selesai.substring(0,5) +
-                ' | 📍 ' + (jadwal.ruangan || '-')
+        const { data: pertemuanData } = await db
+            .from('pertemuan')
+            .select('pertemuan_ke')
+            .eq('jadwal_id', jadwalId)
+            .order('pertemuan_ke', { ascending: false })
+            .limit(1);
 
-            // Cek pertemuan terakhir
-            const { data: pertemuanData } = await db
-                .from('pertemuan')
-                .select('pertemuan_ke')
-                .eq('jadwal_id', jadwalId)
-                .order('pertemuan_ke', { ascending: false })
-                .limit(1)
+        pertemuanKe = (pertemuanData && pertemuanData.length > 0) ? pertemuanData[0].pertemuan_ke + 1 : 1;
+        document.getElementById('pertemuanKe').textContent = pertemuanKe;
 
-            pertemuanKe = (pertemuanData && pertemuanData.length > 0) ? pertemuanData[0].pertemuan_ke + 1 : 1
-            document.getElementById('pertemuanKe').textContent = pertemuanKe
+        const { data: mhs } = await db
+            .from('mahasiswa')
+            .select('id, nim, nama')
+            .eq('kelas_id', jadwal.kelas.id)
+            .order('nama');
 
-            // Ambil mahasiswa
-            const { data: mhs } = await db
-                .from('mahasiswa')
-                .select('id, nim, nama')
-                .eq('kelas_id', jadwal.kelas.id)
-                .order('nama')
+        dataMahasiswa = mhs || [];
+        renderTabel();
+    }
 
-            dataMahasiswa = mhs || []
-            renderTabel()
+    function renderTabel() {
+        const tbody = document.getElementById('dataMahasiswa');
+        if (!dataMahasiswa.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">📭 Tidak ada data mahasiswa</td></tr>';
+            return;
         }
 
-        // ========================================
-        // RENDER TABEL
-        // ========================================
-        function renderTabel() {
-            const tbody = document.getElementById('dataMahasiswa')
-            tbody.innerHTML = dataMahasiswa.map((m, i) => {
-                const status = mahasiswaTidakHadir[m.id]
-                let statusHtml = '<span class="status-badge badge-hadir">✅ Hadir</span>'
-                let btnHtml = '<button class="btn-tidak-hadir" onclick="bukaModal(\'' + m.id + '\', \'' + m.nama.replace(/'/g, "\\'") + '\')">❌ Tidak Hadir</button>'
+        tbody.innerHTML = dataMahasiswa.map((m, i) => {
+            const status = mahasiswaTidakHadir[m.id];
+            let statusHtml = `<span class="status-badge badge-hadir">Hadir</span>`;
+            let btnHtml = `<button class="action-btn btn-danger" onclick="bukaModal('${m.id}', '${m.nama.replace(/'/g, "\\'")}')"><i class="fas fa-user-slash"></i> Tidak Hadir</button>`;
 
-                if (status) {
-                    const badgeClass = {
-                        'Izin': 'badge-izin',
-                        'Sakit': 'badge-sakit',
-                        'Jaga Malam': 'badge-jaga',
-                        'Alpha': 'badge-alpha'
-                    }[status] || 'badge-alpha'
-                    statusHtml = '<span class="status-badge ' + badgeClass + '">' + status + '</span>'
-                    btnHtml = '<button style="background:#6c757d;color:white;border:none;padding:6px 12px;border-radius:5px;cursor:pointer;font-size:0.8em;" onclick="bukaModal(\'' + m.id + '\', \'' + m.nama.replace(/'/g, "\\'") + '\')">✏️ Ganti</button>'
-                }
+            if (status) {
+                const badgeMap = {
+                    'Izin': 'badge-izin',
+                    'Sakit': 'badge-sakit',
+                    'Jaga Malam': 'badge-jaga',
+                    'Alpha': 'badge-alpha'
+                };
+                statusHtml = `<span class="status-badge ${badgeMap[status]}">${status}</span>`;
+                btnHtml = `<button class="action-btn btn-warning" onclick="bukaModal('${m.id}', '${m.nama.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Ubah</button>`;
+            }
 
-                return `
-                    <tr>
-                        <td>${i + 1}</td>
+            return `<tr>
+                        <td>${i+1}</td>
                         <td>${m.nim}</td>
-                        <td>${m.nama}</td>
+                        <td><i class="fas fa-user" style="color:#2d6a4f; width:20px;"></i> ${m.nama}</td>
                         <td>${statusHtml}</td>
                         <td>${btnHtml}</td>
-                    </tr>
-                `
-            }).join('')
+                    </tr>`;
+        }).join('');
+    }
+
+    function bukaModal(mhsId, nama) {
+        mhsDipilih = mhsId;
+        document.getElementById('modalNamaMhs').innerHTML = `<i class="fas fa-id-card"></i> ${nama}`;
+        document.getElementById('modalStatus').style.display = 'flex';
+    }
+
+    function tutupModal() {
+        document.getElementById('modalStatus').style.display = 'none';
+        mhsDipilih = null;
+    }
+
+    function konfirmasiStatus() {
+        const status = document.getElementById('selectStatus').value;
+        mahasiswaTidakHadir[mhsDipilih] = status;
+        tutupModal();
+        renderTabel();
+    }
+
+    async function simpanAbsensi() {
+        const btn = document.getElementById('btnSimpan');
+        const materi = document.getElementById('materi').value.trim();
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Menyimpan...';
+
+        const today = new Date().toISOString().split('T')[0];
+
+        const { data: pertemuan, error: errPert } = await db
+            .from('pertemuan')
+            .insert([{ jadwal_id: jadwalId, pertemuan_ke: pertemuanKe, tanggal: today, materi: materi || null }])
+            .select('id')
+            .single();
+
+        if (errPert) {
+            alert('❌ Gagal menyimpan pertemuan!');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Simpan Absensi';
+            return;
         }
 
-        // ========================================
-        // MODAL
-        // ========================================
-        function bukaModal(mhsId, nama) {
-            mhsDipilih = mhsId
-            document.getElementById('modalNamaMhs').textContent = '👤 ' + nama
-            document.getElementById('modalStatus').style.display = 'flex'
+        const dataInsert = [];
+        for (const mhsId in mahasiswaTidakHadir) {
+            dataInsert.push({ jadwal_id: jadwalId, mahasiswa_id: mhsId, tanggal: today, status: mahasiswaTidakHadir[mhsId] });
         }
 
-        function tutupModal() {
-            document.getElementById('modalStatus').style.display = 'none'
-            mhsDipilih = null
-        }
-
-        function konfirmasiStatus() {
-            const status = document.getElementById('selectStatus').value
-            mahasiswaTidakHadir[mhsDipilih] = status
-            tutupModal()
-            renderTabel()
-        }
-
-        // ========================================
-        // SIMPAN ABSENSI
-        // ========================================
-        async function simpanAbsensi() {
-            const btn = document.getElementById('btnSimpan')
-            const materi = document.getElementById('materi').value.trim()
-
-            btn.disabled = true
-            btn.textContent = '⏳ Menyimpan...'
-
-            const today = new Date().toISOString().split('T')[0]
-
-            // Simpan pertemuan
-            const { data: pertemuan, error: errPert } = await db
-                .from('pertemuan')
-                .insert([{
-                    jadwal_id: jadwalId,
-                    pertemuan_ke: pertemuanKe,
-                    tanggal: today,
-                    materi: materi || null
-                }])
-                .select('id')
-                .single()
-
-            if (errPert) {
-                alert('❌ Gagal menyimpan pertemuan!')
-                btn.disabled = false
-                btn.textContent = '💾 Simpan Absensi'
-                return
+        if (dataInsert.length > 0) {
+            const { error } = await db.from('absensi').insert(dataInsert);
+            if (error) {
+                alert('❌ Gagal menyimpan absensi!');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Absensi';
+                return;
             }
-
-            // Simpan hanya yang tidak hadir
-            const dataInsert = []
-            for (const mhsId in mahasiswaTidakHadir) {
-                dataInsert.push({
-                    jadwal_id: jadwalId,
-                    mahasiswa_id: mhsId,
-                    tanggal: today,
-                    status: mahasiswaTidakHadir[mhsId]
-                })
-            }
-
-            if (dataInsert.length > 0) {
-                const { error } = await db.from('absensi').insert(dataInsert)
-                if (error) {
-                    alert('❌ Gagal menyimpan absensi!')
-                    btn.disabled = false
-                    btn.textContent = '💾 Simpan Absensi'
-                    return
-                }
-            }
-
-            // Sukses
-            const jumlahTidakHadir = Object.keys(mahasiswaTidakHadir).length
-            const jumlahHadir = dataMahasiswa.length - jumlahTidakHadir
-
-            document.getElementById('btnSimpan').style.display = 'none'
-            document.getElementById('pesanSukses').style.display = 'block'
-            document.getElementById('pesanSukses').innerHTML = 
-                '✅ <strong>Pertemuan ' + pertemuanKe + ' berhasil disimpan!</strong><br>' +
-                'Hadir: ' + jumlahHadir + ' | Tidak Hadir: ' + jumlahTidakHadir + '<br>' +
-                '<small>Kembali ke dashboard dalam 3 detik...</small>'
-
-            setTimeout(() => { window.location.href = 'index.html' }, 3000)
         }
 
-        // Load
-        loadData()
-    </script>
+        document.getElementById('btnSimpan').style.display = 'none';
+        const successDiv = document.getElementById('pesanSukses');
+        successDiv.style.display = 'block';
+        document.getElementById('suksesText').innerHTML = `✅ Pertemuan ${pertemuanKe} berhasil disimpan! <br> Hadir: ${dataMahasiswa.length - Object.keys(mahasiswaTidakHadir).length} | Tidak Hadir: ${Object.keys(mahasiswaTidakHadir).length}`;
+
+        setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+    }
+
+    loadData();
+</script>
 </body>
 </html>
