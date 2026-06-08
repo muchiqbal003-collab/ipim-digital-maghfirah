@@ -622,7 +622,15 @@ if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanE
         async function deleteDosen(id) { await db.from('dosen').delete().eq('id', id); loadPage('adminDosen') }
 
         // ==================== ADMIN: CRUD MAHASISWA ====================
-                async function formMahasiswa(id = null) {
+                // ==================== ADMIN: CRUD MAHASISWA ====================
+        async function adminMahasiswa() {
+            document.getElementById('judulHalaman').textContent = 'Data Mahasiswa'; 
+            document.getElementById('breadcrumb').textContent = 'Admin / Mahasiswa'
+            const { data } = await db.from('mahasiswa').select('*, kelas(nama_kelas)').order('nama')
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mahasiswa (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formMahasiswa()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('mahasiswa')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('mahasiswa')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td>${m.kelas?.nama_kelas||m.kelas_id||'-'}</td><td>${actionButtons(`formMahasiswa('${m.id}')`,`confirmDelete('${m.id}','Hapus ${m.nama}?',deleteMahasiswa)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
+        }
+
+        async function formMahasiswa(id = null) {
             showSpinner()
             let m = { nim: '', nama: '', kelas_id: '' }
             
@@ -665,8 +673,11 @@ if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanE
             
             bukaModal('modalForm')
         }
-        async function deleteMahasiswa(id) { await db.from('mahasiswa').delete().eq('id', id); loadPage('adminMahasiswa') }
-
+        
+        async function deleteMahasiswa(id) { 
+            await db.from('mahasiswa').delete().eq('id', id)
+            loadPage('adminMahasiswa') 
+        }
         // ==================== ADMIN: CRUD KELAS & MATKUL ====================
         async function adminKelas() {
             document.getElementById('judulHalaman').textContent = 'Data Kelas'; document.getElementById('breadcrumb').textContent = 'Admin / Kelas'
