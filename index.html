@@ -625,19 +625,41 @@ if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanE
         async function adminMahasiswa() {
             document.getElementById('judulHalaman').textContent = 'Data Mahasiswa'; document.getElementById('breadcrumb').textContent = 'Admin / Mahasiswa'
             const { data } = await db.from('mahasiswa').select('*').order('nama')
-            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mahasiswa (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formMahasiswa()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('mahasiswa')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('mahasiswa')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td>${m.kelas_id||'-'}</td><td>${actionButtons(`formMahasiswa('${m.id}')`,`confirmDelete('${m.id}','Hapus ${m.nama}?',deleteMahasiswa)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
+            document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mahasiswa (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formMahasiswa()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('mahasiswa')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('mahasiswa')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td>${m.kelas?.nama_kelas||m.kelas_id||'-'}</td><td>${actionButtons(`formMahasiswa('${m.id}')`,`confirmDelete('${m.id}','Hapus ${m.nama}?',deleteMahasiswa)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
         }
 
-        async function formMahasiswa(id = null) {
-            let m = { nim:'', nama:'', kelas_id:'' }; if (id) { const { data } = await db.from('mahasiswa').select('*').eq('id', id).single(); if (data) m = data }
-            openForm(id?'Edit Mahasiswa':'Tambah Mahasiswa', [
-                { label:'NIM', id:'fnim', value:m.nim }, { label:'Nama', id:'fnama', value:m.nama },
-                { label:'Kelas', id:'fkelas', value:m.kelas_id||'', placeholder:'Contoh: A, 2A, 2B (isi bebas)' }
+                async function formMahasiswa(id = null) {
+            let m = { nim:'', nama:'', kelas_id:'' }; 
+            if (id) { 
+                const { data } = await db.from('mahasiswa').select('*').eq('id', id).single(); 
+                if (data) m = data 
+            }
+            
+            // Ambil daftar kelas
+            const { data: kelas } = await db.from('kelas').select('*').order('nama_kelas')
+            const kelasOptions = [{ v: '', t: '-- Pilih Kelas --', s: !m.kelas_id }]
+            if (kelas) {
+                kelas.forEach(k => {
+                    kelasOptions.push({ v: k.id, t: k.nama_kelas, s: k.id === m.kelas_id })
+                })
+            }
+            
+            openForm(id ? 'Edit Mahasiswa' : 'Tambah Mahasiswa', [
+                { label: 'NIM', id: 'fnim', value: m.nim }, 
+                { label: 'Nama', id: 'fnama', value: m.nama },
+                { label: 'Kelas', id: 'fkelas', type: 'select', options: kelasOptions }
             ], async () => {
-                const payload = { nim:document.getElementById('fnim').value.trim(), nama:document.getElementById('fnama').value.trim(), kelas_id:document.getElementById('fkelas').value.trim()||null }
+                const payload = { 
+                    nim: document.getElementById('fnim').value.trim(), 
+                    nama: document.getElementById('fnama').value.trim(), 
+                    kelas_id: document.getElementById('fkelas').value || null 
+                }
                 if (!payload.nim || !payload.nama) { alert('NIM dan Nama wajib!'); return }
-                showSpinner(); if (id) await db.from('mahasiswa').update(payload).eq('id', id); else await db.from('mahasiswa').insert([payload])
-                tutupModal('modalForm'); loadPage('adminMahasiswa')
+                showSpinner()
+                if (id) await db.from('mahasiswa').update(payload).eq('id', id)
+                else await db.from('mahasiswa').insert([payload])
+                tutupModal('modalForm')
+                loadPage('adminMahasiswa')
             })
         }
         async function deleteMahasiswa(id) { await db.from('mahasiswa').delete().eq('id', id); loadPage('adminMahasiswa') }
@@ -1412,29 +1434,38 @@ if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanE
             alert('Pengaturan disimpan!')
         }
 
-        function tesAlarm() {
+                function tesAlarm() {
             if (!('Notification' in window)) {
                 alert('Browser tidak mendukung notifikasi!')
                 return
             }
             
             if (Notification.permission === 'granted') {
-                new Notification('⏰ IPIM Absensi - Tes Alarm', { 
+                // Coba kirim notifikasi
+                const notif = new Notification('IPIM Absensi - Tes Alarm', { 
                     body: 'Ini adalah tes alarm! Anda memiliki jadwal mengajar.', 
                     icon: 'images/icon-192.png',
-                    vibrate: [200, 100, 200]
+                    vibrate: [200, 100, 200, 100, 200],
+                    requireInteraction: true
                 })
-                alert('Notifikasi terkirim! Cek pojok atas layar HP/laptop kamu.')
+                
+                // Cek apakah notifikasi muncul
+                setTimeout(() => {
+                    notif.close()
+                }, 5000)
+                
+                alert('Notifikasi terkirim! Cek di bagian atas layar HP.')
             } else if (Notification.permission === 'denied') {
-                alert('Notifikasi diblokir! Buka Settings > Site Settings > Notifications > Allow')
+                alert('Notifikasi diblokir!\n\nCara aktifkan:\n1. Buka Settings HP\n2. Apps > Chrome\n3. Notifications > Allow\n\nAtau:\n1. Klik ikon 🔒 di address bar\n2. Permissions > Notifications > Allow')
             } else {
                 Notification.requestPermission().then(perm => {
                     if (perm === 'granted') {
-                        new Notification('⏰ IPIM Absensi - Alarm Siap!', { 
+                        new Notification('IPIM Absensi - Alarm Siap!', { 
                             body: 'Kamu akan diingatkan sebelum jadwal mengajar.',
-                            icon: 'images/icon-192.png'
+                            icon: 'images/icon-192.png',
+                            vibrate: [200, 100, 200]
                         })
-                        alert('Alarm siap!')
+                        alert('Alarm siap! Notifikasi sudah diizinkan.')
                     } else {
                         alert('Izin notifikasi ditolak. Alarm tidak bisa berfungsi.')
                     }
