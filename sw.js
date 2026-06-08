@@ -1,9 +1,8 @@
-const CACHE_NAME = 'ipim-v3';
+const CACHE_NAME = 'ipim-v1';
 
 const urlsToCache = [
   '/ipim-digital-maghfirah/',
   '/ipim-digital-maghfirah/index.html',
-  '/ipim-digital-maghfirah/style.css',
   '/ipim-digital-maghfirah/manifest.json',
   '/ipim-digital-maghfirah/images/icon-192.png',
   '/ipim-digital-maghfirah/images/icon-512.png'
