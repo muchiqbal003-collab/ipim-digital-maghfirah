@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ipim-v1';
+const CACHE_NAME = 'ipim-v4';
 
 const urlsToCache = [
   '/ipim-digital-maghfirah/',
