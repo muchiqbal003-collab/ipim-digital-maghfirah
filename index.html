@@ -628,20 +628,27 @@ if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanE
             document.getElementById('contentArea').innerHTML = `<div class="card"><h3><span>Daftar Mahasiswa (${data?.length||0})</span><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="formMahasiswa()">+ Tambah</button><button class="btn btn-outline btn-sm" onclick="openImport('mahasiswa')">📥 Import</button><button class="btn btn-outline btn-sm" onclick="exportData('mahasiswa')">📤 Export</button></div></h3><div class="table-wrap"><table><thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th style="width:90px;">Aksi</th></tr></thead><tbody>${data?.map(m => `<tr><td>${m.nim}</td><td>${m.nama}</td><td>${m.kelas?.nama_kelas||m.kelas_id||'-'}</td><td>${actionButtons(`formMahasiswa('${m.id}')`,`confirmDelete('${m.id}','Hapus ${m.nama}?',deleteMahasiswa)`)}</td></tr>`).join('')||'<tr><td colspan="4">Tidak ada data</td></tr>'}</tbody></table></div></div>`
         }
 
-                        async function formMahasiswa(id = null) {
+                                async function formMahasiswa(id = null) {
             let m = { nim:'', nama:'', kelas_id:'' }
             if (id) { 
                 const { data } = await db.from('mahasiswa').select('*').eq('id', id).single()
                 if (data) m = data 
             }
             
-            // Ambil data kelas dari database
-            const { data: kelas } = await db.from('kelas').select('*').order('nama_kelas')
-            const kelasOptions = [{ v: '', t: '-- Pilih Kelas --', s: !m.kelas_id }]
-            if (kelas) {
+            // Ambil SEMUA data kelas
+            const { data: kelas, error: errKelas } = await db.from('kelas').select('*').order('nama_kelas')
+            console.log('Data kelas:', kelas) // Debug
+            
+            const kelasOptions = []
+            if (kelas && kelas.length > 0) {
                 kelas.forEach(k => {
                     kelasOptions.push({ v: k.id, t: k.nama_kelas, s: k.id === m.kelas_id })
                 })
+            }
+            
+            // Kalau tidak ada kelas, kasih opsi kosong
+            if (kelasOptions.length === 0) {
+                kelasOptions.push({ v: '', t: 'Tidak ada kelas tersedia', s: true })
             }
             
             openForm(id ? 'Edit Mahasiswa' : 'Tambah Mahasiswa', [
