@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPIM ACADEMY</title>
+
     <link rel="manifest" href="manifest.json">
 <link rel="icon" href="images/icon-192.png">
 <meta name="theme-color" content="#0d7c3b">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="IPIM Absensi">
+
+<link rel="apple-touch-icon" href="images/icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -314,21 +321,60 @@
         function formatDate() { const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']; const now = new Date(); return hari[now.getDay()] + ', ' + now.getDate() + '/' + (now.getMonth()+1) + '/' + now.getFullYear() }
 
         // ==================== LOGIN ====================
-        function pilihRole(role, btn) { currentRole = role; document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('formLogin').reset(); document.getElementById('pesanError').style.display = 'none' }
+        function pilihRole(role, btn) { 
+            currentRole = role; 
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active')); 
+            btn.classList.add('active'); 
+            document.getElementById('formLogin').reset(); 
+            document.getElementById('pesanError').style.display = 'none'; 
+        }
+        
         document.getElementById('formLogin').addEventListener('submit', async function(e) {
             e.preventDefault()
-            const username = document.getElementById('username').value.trim(), password = document.getElementById('password').value.trim()
-            const pesanError = document.getElementById('pesanError'), btn = this.querySelector('.btn-login')
-            pesanError.style.display = 'none'; btn.disabled = true; btn.textContent = 'Memeriksa...'
+            const username = document.getElementById('username').value.trim()
+            const password = document.getElementById('password').value.trim()
+            const pesanError = document.getElementById('pesanError')
+            const btn = this.querySelector('.btn-login')
+            pesanError.style.display = 'none'
+            btn.disabled = true
+            btn.textContent = 'Memeriksa...'
+            
             if (currentRole === 'admin') {
                 const { data, error } = await db.from('admin').select('*').eq('username', username).single()
-                if (error || !data || data.password !== password) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+                
+                if (error || !data) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+
+// Cek password
+let loginOk = false
+if (data.password === password) { loginOk = true }
+else {
+    try {
+        const { data: cek } = await db.rpc('cek_password', { pass: password, hashed: data.password })
+        if (cek) loginOk = true
+    } catch(err) {}
+}
+if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+                
                 currentUser = { ...data, role: 'admin' }
             } else {
                 const { data, error } = await db.from('dosen').select('*').eq('username', username).single()
-                if (error || !data || data.password !== password) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+                
+                if (error || !data) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+
+// Cek password
+let loginOk = false
+if (data.password === password) { loginOk = true }
+else {
+    try {
+        const { data: cek } = await db.rpc('cek_password', { pass: password, hashed: data.password })
+        if (cek) loginOk = true
+    } catch(err) {}
+}
+if (!loginOk) { pesanError.textContent = 'Username atau password salah!'; pesanError.style.display = 'block'; btn.disabled = false; btn.textContent = 'Masuk'; return }
+                
                 currentUser = { ...data, role: 'dosen' }
             }
+            
             localStorage.setItem('user', JSON.stringify(currentUser))
             tampilkanUtama()
         })
@@ -358,6 +404,9 @@
                     <div class="menu-item" onclick="loadPage('adminRekap')"><span class="menu-icon">${icons.rekap}</span><span class="menu-text">Rekap Absensi</span></div>
                     <div class="menu-item" onclick="loadPage('adminPertemuan')"><span class="menu-icon">${icons.pertemuan}</span><span class="menu-text">Set Pertemuan</span></div>
                     <div class="menu-item" onclick="loadPage('adminLaporan')"><span class="menu-icon">${icons.pertemuan}</span><span class="menu-text">Laporan Dosen</span></div>
+                    <div class="menu-section">Sistem</div>
+                    <div class="menu-item" onclick="loadPage('adminNotifikasi')"><span class="menu-icon">${icons.rekap}</span><span class="menu-text">Kirim Notifikasi</span></div>
+                    <div class="menu-item" onclick="loadPage('adminOnline')"><span class="menu-icon">${icons.dosen}</span><span class="menu-text">User Online</span></div>
                 `
             } else {
                 var menuHtml = '';
@@ -369,6 +418,8 @@
                 menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenPenilaian\')"><span class="menu-icon">' + icons.matkul + '</span><span class="menu-text">Penilaian</span></div>';
                 menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenSilabus\')"><span class="menu-icon">' + icons.rekap + '</span><span class="menu-text">Silabus</span></div>';
                 menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenLaporan\')"><span class="menu-icon">' + icons.pertemuan + '</span><span class="menu-text">Laporan Bulanan</span></div>';
+                menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenNotifikasi\')"><span class="menu-icon">' + icons.dashboard + '</span><span class="menu-text">Notifikasi</span></div>';
+                menuHtml += '<div class="menu-item" onclick="loadPage(\'dosenAlarm\')"><span class="menu-icon">' + icons.pertemuan + '</span><span class="menu-text">Alarm</span></div>';
                 menu.innerHTML = menuHtml;
             }
             if (currentUser.role === 'admin') loadPage('adminDashboard')
@@ -440,12 +491,15 @@
                 case 'adminRekap': await adminRekap(); setActive(6); break
                 case 'adminPertemuan': await adminPertemuan(); setActive(7); break
                 case 'adminLaporan': await adminLaporan(); setActive(8); break
+                case 'adminNotifikasi': await adminNotifikasi(); setActive(9); break
                 case 'dosenDashboard': await dosenDashboard(); setActive(0); break
                 case 'dosenJadwal': await dosenJadwal(); setActive(1); break
                 case 'dosenRekap': await dosenRekap(); setActive(2); break
                 case 'dosenPenilaian': await dosenPenilaian(); setActive(3); break
                 case 'dosenSilabus': await dosenSilabus(); setActive(4); break
                 case 'dosenLaporan': await dosenLaporan(); setActive(5); break
+                case 'dosenNotifikasi': await dosenNotifikasi(); setActive(6); break
+                case 'dosenAlarm': await dosenAlarm(); setActive(7); break
             }
             hideSpinner()
         }
@@ -1279,6 +1333,113 @@
             }
 
             document.getElementById('contentArea').innerHTML = html
+        }
+        
+                // ==================== ADMIN NOTIFIKASI ====================
+                async function adminNotifikasi() {
+            document.getElementById('judulHalaman').textContent = 'Kirim Notifikasi'
+            document.getElementById('breadcrumb').textContent = 'Admin / Notifikasi'
+
+            let html = '<div class="card"><h3>Kirim Notifikasi ke Semua Dosen</h3>'
+            html += '<div class="form-group"><label>Judul</label><input type="text" id="njudul" placeholder="Contoh: Perubahan Jadwal"></div>'
+            html += '<div class="form-group"><label>Pesan</label><textarea id="npesan" rows="4" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;font-family:inherit;" placeholder="Isi pesan..."></textarea></div>'
+            html += '<button class="btn btn-primary" onclick="kirimNotifikasi()">Kirim Notifikasi</button></div>'
+
+            const { data: notif } = await db.from('notifikasi').select('*').order('created_at', { ascending: false }).limit(20)
+            html += '<div class="card"><h3>Riwayat Notifikasi</h3>'
+            if (notif && notif.length > 0) {
+                html += '<div class="table-wrap"><table><thead><tr><th>Judul</th><th>Pesan</th><th>Tanggal</th></tr></thead><tbody>'
+                notif.forEach(n => {
+                    html += '<tr><td><strong>' + n.judul + '</strong></td><td>' + (n.pesan || '-') + '</td><td>' + new Date(n.created_at).toLocaleString('id-ID') + '</td></tr>'
+                })
+                html += '</tbody></table></div>'
+            } else {
+                html += '<p style="color:#9ca3af;">Belum ada notifikasi</p>'
+            }
+            html += '</div>'
+            document.getElementById('contentArea').innerHTML = html
+        }
+
+        async function kirimNotifikasi() {
+            const judul = document.getElementById('njudul').value.trim()
+            const pesan = document.getElementById('npesan').value.trim()
+            if (!judul) { alert('Judul wajib!'); return }
+            showSpinner()
+            await db.from('notifikasi').insert([{ judul, pesan }])
+            hideSpinner()
+            alert('Notifikasi terkirim!')
+            loadPage('adminNotifikasi')
+        }
+
+        // ==================== DOSEN NOTIFIKASI ====================
+        async function dosenNotifikasi() {
+            document.getElementById('judulHalaman').textContent = 'Notifikasi'
+            document.getElementById('breadcrumb').textContent = 'Dosen / Notifikasi'
+            const { data } = await db.from('notifikasi').select('*').order('created_at', { ascending: false }).limit(50)
+            let html = '<p style="margin-bottom:16px;color:var(--text-light);">Pesan dari Admin</p>'
+            if (!data || data.length === 0) {
+                html += '<div class="card"><p style="text-align:center;padding:30px;color:#9ca3af;">Tidak ada notifikasi</p></div>'
+            } else {
+                data.forEach(n => {
+                    html += '<div class="card" style="border-left:4px solid var(--orange);margin-bottom:12px;"><h3 style="border:none;margin-bottom:6px;padding-bottom:0;">' + n.judul + '</h3><p style="color:var(--text-light);margin-bottom:4px;">' + (n.pesan || '-') + '</p><small style="color:var(--text-lighter);">' + new Date(n.created_at).toLocaleString('id-ID') + '</small></div>'
+                })
+            }
+            document.getElementById('contentArea').innerHTML = html
+        }
+
+        // ==================== DOSEN ALARM ====================
+        async function dosenAlarm() {
+            document.getElementById('judulHalaman').textContent = 'Alarm Pengingat'
+            document.getElementById('breadcrumb').textContent = 'Dosen / Alarm'
+            const { data: setting } = await db.from('setting_alarm').select('*').eq('dosen_id', currentUser.id).single()
+            const alarmAktif = setting ? setting.alarm_aktif : true
+            const menit = setting ? setting.menit_sebelum : 10
+            let html = '<div class="card"><h3>Pengaturan Alarm</h3><p style="color:var(--text-light);margin-bottom:16px;">Alarm berbunyi sebelum jadwal mengajar</p>'
+            html += '<div class="form-group"><label>Status</label><select id="alarmStatus" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;"><option value="true" ' + (alarmAktif?'selected':'') + '>Aktif</option><option value="false" ' + (!alarmAktif?'selected':'') + '>Nonaktif</option></select></div>'
+            html += '<div class="form-group"><label>Menit Sebelum Mengajar</label><select id="alarmMenit" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;">'
+            for (let i = 5; i <= 30; i += 5) html += '<option value="' + i + '" ' + (menit===i?'selected':'') + '>' + i + ' menit</option>'
+            html += '</select></div>'
+            html += '<button class="btn btn-primary" onclick="simpanAlarm()">Simpan</button> <button class="btn btn-outline" onclick="tesAlarm()">Tes Alarm</button></div>'
+            document.getElementById('contentArea').innerHTML = html
+        }
+
+        async function simpanAlarm() {
+            const aktif = document.getElementById('alarmStatus').value === 'true'
+            const menit = parseInt(document.getElementById('alarmMenit').value)
+            showSpinner()
+            await db.from('setting_alarm').upsert({ dosen_id: currentUser.id, alarm_aktif: aktif, menit_sebelum: menit }, { onConflict: 'dosen_id' })
+            hideSpinner()
+            alert('Pengaturan disimpan!')
+        }
+
+        function tesAlarm() {
+            if (!('Notification' in window)) {
+                alert('Browser tidak mendukung notifikasi!')
+                return
+            }
+            
+            if (Notification.permission === 'granted') {
+                new Notification('⏰ IPIM Absensi - Tes Alarm', { 
+                    body: 'Ini adalah tes alarm! Anda memiliki jadwal mengajar.', 
+                    icon: 'images/icon-192.png',
+                    vibrate: [200, 100, 200]
+                })
+                alert('Notifikasi terkirim! Cek pojok atas layar HP/laptop kamu.')
+            } else if (Notification.permission === 'denied') {
+                alert('Notifikasi diblokir! Buka Settings > Site Settings > Notifications > Allow')
+            } else {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        new Notification('⏰ IPIM Absensi - Alarm Siap!', { 
+                            body: 'Kamu akan diingatkan sebelum jadwal mengajar.',
+                            icon: 'images/icon-192.png'
+                        })
+                        alert('Alarm siap!')
+                    } else {
+                        alert('Izin notifikasi ditolak. Alarm tidak bisa berfungsi.')
+                    }
+                })
+            }
         }
         function bukaAbsensi(jadwalId) { 
             localStorage.setItem('jadwalAktif', jadwalId)
